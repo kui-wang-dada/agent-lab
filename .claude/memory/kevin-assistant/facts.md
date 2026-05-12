@@ -28,13 +28,44 @@
 - 想"把心里的故事讲出来"，源自《李献计》
 - 创作路径：中短篇起步，不为商业、暂不为动画服务
 
-## 项目仓库
+## 项目仓库地图（跨项目导航用）
 
-- **agent-lab**：`~/Project/profile/project/agent-lab/`（本 agent 体系所在地）
-  - `.claude/` — Hermes 风格 agent + skills + memory + hooks
-  - 历史 `kevin-hub/` 已废弃，关键内容已迁移到 `.claude/memory/`
-- **media**：`~/Project/profile/project/media/`（自媒体执行项目，独立 Cowork）
-- **代码项目**：`~/Project/profile/code/*` 和 `~/Project/work/*`
+> **核心原则**：agent-lab 是 CEO/思考层，每个垂直项目是执行层。
+> 跨项目任务 → assistant 拆分调度，不要替对应项目的 Claude Code 直接动它的代码。
+
+### `~/Project/profile/project/`（个人项目区）
+
+| 项目 | 用途 | 关键文件 |
+|---|---|---|
+| **agent-lab** | 本 agent 体系（CEO 层） | `.claude/CLAUDE.md` `.claude/agents/*` `.claude/memory/*` `.claude/hooks/*` |
+| **media** | 自媒体执行（独立 Cowork） | `CLAUDE.md`（17KB） `inbox/ideas/wXX.md` `episodes/2026-WXX-*` `weekly-log/` |
+| **upwork-hunter** | Upwork 投递工具 + 简历 + 策略 | `CLAUDE.md` `resume/profile.md` `data/strategy_notes.md` `data/seen_jobs.json` `data/submissions.json` |
+| **kevin-hub** | 个人想法/规划/profile（已迁移核心，保留作历史归档） | `plans/business-plan.md` `ideas/*` `logs/weekly-*` |
+| **website** | 个人站旧版（被 tianda-web 取代） | `frontend/` `backend/` |
+| **indie-dev** | 宠物医疗 B 端探索 | `CLAUDE.md` `docs/product-research-2026-04.md` |
+| **quant** | Crypto Sentinel v2（量化）| `CLAUDE.md` `README.md` `strategies/*` `config.yaml` `.env` |
+| **docs** | 通用文档 | - |
+
+### `~/Project/profile/code/`（公开开发项目区）
+
+| 项目 | 用途 | 状态 |
+|---|---|---|
+| **tianda-web** | 个人品牌门户 V2 | Next.js 15 静态导出 + FastAPI + Vite admin，进行中 |
+| 其他 | ... | （按需扫描） |
+
+### `~/Project/work/`（客户项目区）
+
+| 项目 | 客户 |
+|---|---|
+| **astriddao** | 21+ DeFi 子项目（历史） |
+| **upwork-2025-4-6-rn-ai-* (Venus 系列)** | 韩国 AI 美妆 App（**当前主要客户**） |
+| 其他 | （按需扫描） |
+
+### Sibling 调用导航
+- 涉及 media 选题 → 让 @kevin-media 读 `~/Project/profile/project/media/inbox/ideas/`
+- 涉及 Upwork 简历 → 让 @kevin-upwork 读 `~/Project/profile/project/upwork-hunter/resume/`
+- 涉及量化 → @kevin-research 读 `~/Project/profile/project/quant/strategies/`
+- 涉及业务规划 → 直接引用 `.claude/memory/business-plan.md`（已迁移）
 
 ## Inbox 偏好（待 Kevin 补充）
 
