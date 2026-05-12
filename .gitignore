@@ -1,1 +1,12 @@
+# 旧的测试目录（已迁移）
 kevin-hub
+
+# 时间戳备份（重构留下）
+.claude.bak.*
+kevin-hub.bak.*
+
+# 运行时产物
+logs/
+.claude/memory/_review-queue/*.json
+!.claude/memory/_review-queue/README.md
+.DS_Store
