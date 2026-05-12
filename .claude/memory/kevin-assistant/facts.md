@@ -30,12 +30,21 @@
 
 ## 项目仓库
 
-- **kevin-hub**：`~/Project/profile/project/kevin-hub/`
-  - `/profile` — 简历、个人背景、技术栈详情
-  - `/plans` — 业务规划、目标、OKR
-  - `/ideas` — 探索中的想法
-  - `/templates` — 常用模板（含本 agent 体系）
-  - `/logs` — 周报、复盘、决策记录
+- **agent-lab**：`~/Project/profile/project/agent-lab/`（本 agent 体系所在地）
+  - `.claude/` — Hermes 风格 agent + skills + memory + hooks
+  - 历史 `kevin-hub/` 已废弃，关键内容已迁移到 `.claude/memory/`
+- **media**：`~/Project/profile/project/media/`（自媒体执行项目，独立 Cowork）
+- **代码项目**：`~/Project/profile/code/*` 和 `~/Project/work/*`
+
+## Inbox 偏好（待 Kevin 补充）
+
+<!-- agent 在工作中观察追加：
+- 邮件回复时效偏好（24h 内 / 当天 / 下周）
+- 微信不打扰原则
+- 优先回复哪类客户
+- 哪些消息可以批量回复 / 哪些必须个性化
+-->
+
 
 ## 沟通风格偏好
 

@@ -3,7 +3,7 @@
 > 由 `kevin-curator` 周巡时刷新。所有 agent 工作前必读，决定"是否有现成 skill 可复用"。
 > 项目级（`.claude/skills/`）+ 用户级（`~/.claude/skills/`）都在内。
 
-**Last refreshed**: 2026-05-11（手动初版）
+**Last refreshed**: 2026-05-12（agent 重组：biz→upwork + 新增 domestic / research）
 
 ---
 
@@ -29,9 +29,12 @@
 | 前缀 | 归属 |
 |---|---|
 | `assistant-` | kevin-assistant |
-| `biz-` | kevin-biz |
+| `upwork-` | kevin-upwork（英文市场） |
+| `domestic-` | kevin-domestic（中文市场） |
+| `research-` | kevin-research |
 | `media-` | kevin-media |
 | `product-` | kevin-product |
+| `arch-` | kevin-architect |
 | `fe-` | kevin-frontend |
 | `be-` | kevin-backend |
 | `qa-` | kevin-qa |

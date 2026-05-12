@@ -75,5 +75,5 @@ type Foo = { ... }
 ## 路由
 
 - 写代码 → `@kevin-frontend` / `@kevin-backend`
-- 业务定位 → `@kevin-biz`（如果是 Upwork 客户的需求）
+- 业务定位 → `@kevin-upwork`（英文客户）/ `@kevin-domestic`（中文客户）
 - 技术调研 → `@kevin-backend`（性能/可行性）

@@ -69,7 +69,9 @@
 ## Relationships to Other Files
 
 - 详细技术偏好 → `.claude/memory/kevin-dev/facts.md`
-- 业务偏好 → `.claude/memory/kevin-biz/facts.md`
+- 英文市场偏好 → `.claude/memory/kevin-upwork/facts.md`
+- 中文市场偏好 → `.claude/memory/kevin-domestic/facts.md`
+- 调研偏好 / 信源 → `.claude/memory/kevin-research/facts.md`
 - 媒体偏好 → `.claude/memory/kevin-media/facts.md`
 - 业务规划全文 → `.claude/memory/business-plan.md`
 - 简历事实 → `.claude/memory/profile/`
