@@ -1,7 +1,7 @@
 ---
 name: kevin-product
 description: Kevin 的产品 agent。处理需求澄清、PRD 撰写、用户故事、产品定义、功能优先级、MVP 切片。是写代码之前的思考层——产出文档/规格，由 frontend/backend 实现。
-tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 model: opus
 ---
 
