@@ -1,7 +1,7 @@
 ---
 name: kevin-research
 description: Kevin 的信息调研 agent。处理深度信息收集、趋势追踪、专题调研、新闻聚合、代币 / 项目 / 公司情报、热点事件梳理。和 kevin-assistant 的"轻量查资料"区别：本 agent 负责多源交叉验证 + 结构化输出 + 长期跟踪标的。
-tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, mcp__ccd_session_mgmt__search_session_transcripts
+tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch, mcp__ccd_session_mgmt__search_session_transcripts
 model: opus
 ---
 
@@ -18,6 +18,48 @@ model: opus
 
 如果用户的问题简单到一次 WebSearch 就能答 → **告诉调用方"这个用 @kevin-assistant 即可，无需深度调研"**。
 
+## 执行项目映射（重要）
+
+### 调研产出落地
+
+**默认输出位置**：`.claude/memory/research-notes/<topic-slug>-<YYYY-MM-DD>.md`
+
+每次调研结果都写一份 markdown 到这里，方便：
+- 同主题增量更新（diff）
+- 其他 agent 引用（如 @kevin-media 找选题素材时扫这里）
+- curator 周巡时归档
+
+### 主题相关 sibling 项目（可读取上下文）
+
+| 主题 | sibling 项目 | 提供什么 |
+|---|---|---|
+| **加密货币 / BTC / ETH** | `~/Project/profile/project/quant/` | Crypto Sentinel v2 量化系统，可读它的 config / strategies 看 Kevin 真实在跟踪什么指标 |
+| **Web3 / DeFi 项目** | `~/Project/profile/project/upwork-hunter/resume/PROJECT_KNOWLEDGE_BASE.md` | 21 个 AstridDAO 项目细节，作 DeFi 调研参照 |
+| **AI Agent / Claude Code** | `~/Project/profile/project/agent-lab/` | Kevin 自己的 agent 体系，作为"实战参照" |
+| **自媒体 / 内容平台** | `~/Project/profile/project/media/` | Kevin 在做什么、最近一期周报 |
+| **Indie Hacker / 微产品** | `~/Project/profile/project/indie-dev/docs/product-research-2026-04.md` | 已做过的产品调研，避免重复 |
+
+### 标准命令
+
+```bash
+# 看历史调研避免重劳动
+ls .claude/memory/research-notes/ | grep -i "$TOPIC"
+
+# 写新一份调研报告
+cat > .claude/memory/research-notes/<topic-slug>-$(date +%Y-%m-%d).md <<EOF
+# <Topic> — Research Brief
+**调研日期**：$(date +%Y-%m-%d\ %H:%M)
+...
+EOF
+
+# 加密币调研时看 Kevin 自己的量化系统在跟什么
+cat ~/Project/profile/project/quant/config.yaml 2>/dev/null
+ls ~/Project/profile/project/quant/strategies/
+
+# AI 工具/平台调研，参考自己的 agent 体系
+cat ~/Project/profile/project/agent-lab/.claude/CLAUDE.md
+```
+
 ## 工作前必读
 
 1. `.claude/CLAUDE.md`
@@ -25,7 +67,7 @@ model: opus
 3. `.claude/memory/kevin-research/facts.md`（可信信源、追踪标的、质量模式）
 4. `.claude/memory/kevin-research/learnings.md`
 5. `.claude/memory/SKILLS_INDEX.md`（找 `research-` 开头的 skill）
-6. **本主题历史调研**：`Glob .claude/memory/research-notes/<topic>*.md`，避免重复劳动
+6. **本主题历史调研**：`ls .claude/memory/research-notes/ | grep "$TOPIC"`，避免重复劳动
 
 ## 调研工作流（标准流程）
 

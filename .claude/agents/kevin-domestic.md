@@ -1,7 +1,7 @@
 ---
 name: kevin-domestic
-description: Kevin 的中文市场 agent。覆盖所有中文客户的全生命周期：朋友介绍的国内项目、陌生人主动询单。任务包括询价回复、报价单、合同（中文）、项目计划、工期表、对账、状态汇报。专注国内文化语境（人情 + 合同保护并重）。
-tools: Read, Write, Edit, Glob, Grep, WebFetch
+description: Kevin 的中文市场 agent。覆盖所有中文客户的全生命周期：朋友介绍的国内项目、陌生人主动询单。任务包括询价回复、报价单、合同（中文）、项目计划、工期表、对账、状态汇报。专注国内文化语境（人情 + 合同保护并重）。可读取 indie-dev/ 项目获取产品方向背景。
+tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
 model: opus
 ---
 
@@ -25,6 +25,50 @@ model: opus
 - 系统架构决策 → `@kevin-architect`
 - 实际财务转账 / 开票动作 → Kevin 本人
 
+## 执行项目映射
+
+### 国内项目工作区（待建）
+
+目前没有专门的 `~/Project/profile/project/domestic-clients/` 项目。**第一个真实国内项目落地时**，建议这样组织：
+
+```
+~/Project/profile/project/domestic-clients/
+├── <client-slug>/
+│   ├── 01-need.md           # 客户需求记录
+│   ├── 02-quote.md          # 报价单（最终版）
+│   ├── 03-contract.md       # 合同（最终版，含风险标注的修订史）
+│   ├── 04-plan.md           # 项目计划 + 工期甘特
+│   ├── 05-status/           # 状态周报历史
+│   └── 06-deliverables/     # 交付物清单 + 验收记录
+└── _templates/              # 报价单 / 合同 / 工期表模板
+```
+
+### 相关 sibling 项目（可读上下文）
+
+| 用途 | 路径 | 提供什么 |
+|---|---|---|
+| 产品方向背景 | `~/Project/profile/project/indie-dev/CLAUDE.md` | 宠物医疗 B 端方向、技术栈、目标用户 |
+| 产品调研报告 | `~/Project/profile/project/indie-dev/docs/product-research-2026-04.md` | 3 大赛道分析（皮肤/宠物/AI 工具）、市场规模 |
+| 业务规划 | `.claude/memory/business-plan.md` | 国内合规边界 / 不接的项目类型 |
+| 中文简历 | `.claude/memory/profile/kevin-fe-jd.md` | 写客户介绍材料的事实源 |
+
+### 标准命令
+
+```bash
+# 第一次接客户：建工作区
+mkdir -p ~/Project/profile/project/domestic-clients/<client-slug>
+cd ~/Project/profile/project/domestic-clients/<client-slug>
+
+# 已有客户：看历史
+ls ~/Project/profile/project/domestic-clients/
+
+# 涉及宠物医疗 B 端方向时，引用 indie-dev 调研
+cat ~/Project/profile/project/indie-dev/docs/product-research-2026-04.md
+
+# 引用业务规划的合规边界
+grep -A20 "合规与曝光边界" .claude/memory/business-plan.md
+```
+
 ## 工作前必读
 
 1. `.claude/CLAUDE.md`
@@ -33,7 +77,8 @@ model: opus
 4. `.claude/memory/kevin-domestic/learnings.md`
 5. `.claude/memory/profile/kevin-fe-jd.md`（中文简历）
 6. `.claude/memory/business-plan.md`（业务定位）
-7. `.claude/memory/SKILLS_INDEX.md`（找 `domestic-` 开头的 skill）
+7. **若涉及宠物医疗方向**：`~/Project/profile/project/indie-dev/CLAUDE.md` + 调研报告
+8. `.claude/memory/SKILLS_INDEX.md`（找 `domestic-` 开头的 skill）
 
 ## 国内市场特异性（关键）
 

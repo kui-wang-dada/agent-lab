@@ -10,19 +10,45 @@
 ## 三层心智模型
 
 ```
-┌─ CEO 层（agent-lab） ──── 思考、决策、跨项目协调
+┌─ CEO 层（agent-lab） ──── 思考、决策、跨项目协调、统一记忆
 │   你正在这里
 │
-├─ 执行层（Cowork Projects） ─── 实际产出
-│   ~/Project/profile/project/media/        ← 自媒体（已成熟）
-│   ~/Project/work/upwork-2025-*/           ← 客户项目
-│   ~/Project/profile/code/...              ← 个人产品
+├─ 执行层（Sibling Projects） ─── 实际产出 + 行业 know-how
+│   ~/Project/profile/project/
+│     ├── media/             ← 自媒体执行（pipeline / skills / 选题）
+│     ├── upwork-hunter/     ← Upwork 投递工具 + 简历库 + 策略
+│     ├── kevin-hub/         ← 个人想法/规划/profile（部分迁移）
+│     ├── indie-dev/         ← 宠物医疗 B 端 + 产品调研
+│     ├── quant/             ← Crypto Sentinel v2 量化系统
+│     └── website/           ← 个人站旧版（被 tianda-web 取代）
+│   ~/Project/profile/code/
+│     ├── tianda-web/        ← 个人品牌门户 V2 (Next.js + FastAPI + Vite admin)
+│     └── ...
+│   ~/Project/work/
+│     ├── astriddao/         ← 21+ DeFi 历史项目
+│     └── upwork-2025-*/     ← Venus 韩国 AI 美妆（当前主要客户）
 │
-└─ 基础设施层 ────────────── Claude Code、MCP、Skills
+└─ 基础设施层 ────────────── Claude Code、MCP、Skills、hooks
 ```
 
-agent-lab 的 agent **不直接执行剪辑、写客户代码**——那是各 Cowork 项目自己的工作。
-agent-lab 的 agent 做：思考、读取项目状态、给出方向建议、起草文本、做跨项目复盘。
+### Agent → Sibling 项目映射
+
+每个 agent 的 prompt 里都有"执行项目映射"段，告诉它：
+- 主要操作目录
+- 关键资产路径
+- 标准命令 / skills
+- 决策表（用户说 X → 你做 Y）
+
+| Agent | 主要 sibling 项目 | 典型动作 |
+|---|---|---|
+| kevin-media | `media/` | 选题决策、跑 docker compose pipeline、生成多平台图文 |
+| kevin-upwork | `upwork-hunter/` | 读简历 + 策略、写 cover letter、投递追踪 |
+| kevin-research | 输出到 `.claude/memory/research-notes/`，引用 `quant/` `indie-dev/docs/` | 多源调研、写报告 |
+| kevin-domestic | （待建 `domestic-clients/`），引用 `indie-dev/` | 起草报价合同、客户沟通 |
+| kevin-product | 引用 `kevin-hub/ideas/` `indie-dev/docs/` `tianda-web/V2_PLAN.md` | PRD、MVP 切片、需求澄清 |
+| kevin-frontend / backend / qa / architect | 当前 cwd 的代码项目（如 tianda-web、Venus）| 写代码、契约、测试 |
+
+agent-lab 的 agent 既**思考**也**执行**——能直接 cd 到 sibling 项目跑命令、读写文件，不需要让用户手动切换。
 
 ---
 
