@@ -1,102 +1,85 @@
 ---
-title: 用 Claude Code 复刻 Hermes 风格：自我成长的个人 AI 员工体系
-author: Kevin Wang
+title: 用 Claude Code 原生能力复刻 Hermes 风格的自我成长 Agent 体系
+author: Kevin Wang (王奎)
 date: 2026-05-13
-status: draft（视频源文档，待 media/.claude/skills/script-polish 提炼成视频脚本）
-target: 周六（2026-05-16）视频选题候选
-platforms: 抖音 + B 站（国内合规）
-estimated_video_length: 12-15 分钟
+version: 1.0
+abstract: 基于 Anthropic Claude Code 的 Agents / Skills / Hooks / MCP 原语，构建一套与 Nous Research 的 Hermes Agent 功能等价的个人多 Agent 系统，支持跨 session 长期记忆、自动 skill 抽取、用户建模周更新、跨子项目协调执行。本文记录设计动机、架构映射、实现细节与运行效果。
 ---
 
-# 用 Claude Code 复刻 Hermes 风格：自我成长的个人 AI 员工体系
+# 用 Claude Code 原生能力复刻 Hermes 风格的自我成长 Agent 体系
 
-> 本文是技术源文档。视频脚本由此提炼，时长压到 1000-1500 字口播稿。
-> 文中带 `📹` 的段落是建议视频化讲解的高密度节点；带 `🖼️` 是适合截图/录屏演示。
+## Abstract
 
-## TL;DR
-
-我接了一年多 Upwork，每天用 Claude Code 写代码。但我一直觉得自己用 AI 的方式太"古法编程"——还把它当某一个环节的助手，没把整个工作流梳理通。最近看到 Nous Research 的 Hermes Agent，它把"自我学习闭环"做成了 agent 的内置能力，让我想清楚自己想要什么。
-
-但我不想装 Hermes——我的 Max 订阅是甲方提供的，跨 provider 那套用不上。所以我用 **Claude Code 原生的 Agents + Skills + Hooks + MCP**，3 天搭出了一套**等价系统**：12 个不同维度的 AI 员工，能跨项目协作，有长期记忆，会自己抽 skill，每周自我巡检。
-
-效果：现在我说"@kevin-frontend 我想加个用户头像上传"，它自己会发现这事跨前后端，停手调 architect 先定契约；说"@kevin-media 帮我剪 W19 那期"，它自动 cd 到 media 项目改 .env 跑 docker compose。**不需要我再喂上下文。**
+本文描述如何用 Anthropic Claude Code 的原生原语（Agents、Skills、Hooks、MCP）实现一套与 [Nous Research Hermes Agent](https://github.com/nousresearch/hermes-agent) 功能等价的个人多 Agent 系统。系统在项目级 `.claude/` 目录下定义 12 个职责分离的 Agent、3 个生命周期 hook、分层记忆体系（USER.md / MEMORY.md / per-agent facts.md / learnings.md / SKILLS_INDEX.md），以及一个由 launchd 周期触发的 curator agent，实现学习闭环。系统不依赖任何第三方 framework，部署成本接近零（仅需 Claude Code CLI 已安装），并保留了 Hermes 的核心特征：自动 skill 创建、跨 session 记忆、用户模型周期更新、agent-curated memory。
 
 ---
 
-## 1. 起源：Vibe Coding 的卡点
+## 1. 背景与动机
 
-📹 **建议视频化讲解：本节最适合做开场钩子**
+### 1.1 单 Agent 的局限
 
-最近我在做韩国客户的活（Venus，AI 美妆 App）。每天的工作流大概是这样：
+使用 Claude Code 长期开发存在以下问题：
 
-1. 早晨去 Slack 看新需求 + 沟通记录
-2. **下载 Slack 里的图片**（Slack MCP 不支持下图，每天手动 2-3 分钟）
-3. 把记录 + 图贴给 Claude
-4. 它给计划，我 review，开始干
-5. 真机测试，反复改
+1. **上下文重复构建**：每次新 session 需重新告知用户偏好、项目位置、技术栈
+2. **角色混淆**：单 Agent 同时扮演产品、前端、后端、测试，注意力切换成本高
+3. **学习不持久**：上一次 session 学到的经验，下一次 session 已遗忘
+4. **跨项目割裂**：自由职业者通常并行多项目（客户、自媒体、个人产品），各项目 Agent 互不知情
 
-这套流程不慢——但**我越用越觉得自己思路不对**。我把 Claude 当成"某个环节的执行器"，而不是把所有环节都让它接管。
+### 1.2 Hermes Agent 的启发
 
-🖼️ **截图建议**：贴个 Slack 沟通截图（脱敏处理，只保留时间轴），说"每天就这一个动作我自己做了一年"
+Nous Research 的 Hermes Agent 提出"自我学习闭环"作为内置能力，其核心特征为：
 
-我之前的方案：在当前项目里建一个 `.claude/agents/` 目录，放 4 个角色（pm / fe / be / qa）。但这玩意儿是项目级的，**每个项目要复制一份**。而且我 Upwork 接的活、自媒体、量化策略、个人站重构——四个项目并行，agent 互不知道对方学到什么。
+| 特征 | 描述 |
+|---|---|
+| Skills 闭环 | Agent 在使用中改进 skill，并在复杂任务后自动创建新 skill |
+| Periodic nudges | Agent 自身定期触发记忆持久化 |
+| User modeling | 维护一个不断深化的用户模型（USER.md） |
+| Cross-session search | 可搜索自身过往对话 |
+| Agent-curated memory | 记忆由 agent 整理而非用户手动写 |
 
-唏嘘的是，我用了一年 Claude Code，竟然没意识到这套体系可以共用记忆。
+### 1.3 为什么不直接使用 Hermes
 
----
+1. **Provider 锁定问题**：Hermes 设计为 multi-provider；本文作者使用客户提供的 Anthropic Max 订阅，不需要跨 provider 抽象
+2. **部署成本**：Hermes 需独立 Python 环境、自建 messaging gateway、独立状态存储
+3. **能力重叠**：Claude Code 已原生提供 Agents、Skills、Hooks、MCP、跨 session 搜索、定时任务等核心原语
 
-## 2. Hermes 给了我灵感（但我没装）
-
-📹 **建议视频化讲解：本节适合穿插 GitHub 截图**
-
-[Nous Research 的 Hermes Agent](https://github.com/nousresearch/hermes-agent) 是个开源项目。他们自己的标语很狂——"**The only agent with a built-in learning loop**"：
-
-> creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are.
-
-翻译成大白话，5 个能力：
-
-1. **学习闭环**：用 skill → 改进 skill → 持久化
-2. **agent-curated memory + 周期性 nudges**：不是用户主动写，agent 自己整理后定期提醒
-3. **deepening model of who you are**：USER.md 越来越准
-4. **search its own past conversations**：跨 session 记忆
-5. **autonomous skill creation**：复杂任务后自动抽 skill
-
-我看完想：这就是我想要的"成长性员工"。每次跟新前端 agent 说一遍我的偏好太累，应该让他**自己记住**。
-
-🖼️ **截图建议**：Hermes Agent 的 GitHub README 顶部（技术圈共识工具，国内合规可露）
-
-**但我没装。三个原因**：
-
-1. **订阅冲突**：Hermes 设计成 multi-provider，我用的 Max 订阅是甲方提供的，跨 provider 用不上
-2. **重新部署成本**：装一套独立的 agent 框架 + 接 messaging gateway，工时太大
-3. **Claude Code 已经有 80% 的能力**：Agents、Skills、Hooks、MCP——这些原语已经够拼出 Hermes 的核心
-
-所以我决定：**用 Claude Code 原生能力复刻一个等价系统**。
+结论：用 Claude Code 原生能力实现等价系统，避免重复造轮子。
 
 ---
 
-## 3. 概念映射：Hermes 的每个能力 → Claude Code 对应物
+## 2. 设计目标
 
-📹 **建议视频化讲解：本节做架构图最合适**
+| # | 目标 | 优先级 |
+|---|---|---|
+| 1 | 12 个职责分离的 Agent，按"思考模式"而非"技术栈"切分 | P0 |
+| 2 | 跨 Agent 共享的用户模型 + 经验池 | P0 |
+| 3 | Agent 完成任务后自动触发记忆 / skill 候选评审 | P0 |
+| 4 | 一个 curator agent 周期性整合记忆、抽 skill、更新用户模型 | P0 |
+| 5 | Agent 可直接操作 sibling 项目（自媒体 pipeline、Upwork 投递、量化系统等），不需用户手动切换 cwd | P1 |
+| 6 | 跨 session 记忆查询能力 | P1 |
+| 7 | 路由层支持手机端短消息分发 | P2 |
 
-```
-Hermes 概念                Claude Code 等价物         状态
-─────────────────────────────────────────────────────────
-Agent core / loop      →   Session                  ✅ 原生
-40+ tools              →   Bash + Read + MCP         ✅ 已有
-Skills subsystem       →   Claude Code Skills        ✅ 完美对应
-Multi-provider         →   仅 Anthropic              ⚠️ 我只用 Max
-Messaging gateway      →   Slack MCP + RemoteTrigger ✅ 部分
-Personality (SOUL.md)  →   每个 agent 的 prompt       ✅
-State management       →   session.jsonl + memory/   ✅
-Cron scheduler         →   schedule skill            ✅
-Parallel subagents     →   Agent tool                ✅
-跨 session 搜索         →   ccd_session_mgmt MCP      ✅ 已装
-Honcho 用户建模         →   curator agent + USER.md   🆕 自建
-Skills 自动 nudge       →   SubagentStop hook         🆕 自建
-```
+---
 
-90% 能力 Claude Code 已经有。**真正要补的只有 4 件事**：
+## 3. 概念映射：Hermes → Claude Code
+
+| Hermes 概念 | Claude Code 对应 | 实现状态 |
+|---|---|---|
+| Agent core / loop | Session | 原生 |
+| 40+ tools | Bash + Read/Write + MCP servers | 原生 |
+| Skills subsystem (自我改进) | Claude Code Skills | 原生 |
+| Multi-provider | 仅 Anthropic | 不需要 |
+| Messaging gateway (Slack/Telegram/...) | Slack MCP + RemoteTrigger | 部分原生 |
+| Personality (SOUL.md) | 每个 agent 的 prompt frontmatter | 原生 |
+| State (`hermes_state.py`) | session.jsonl + memory/ | 原生 |
+| Cron scheduler | macOS launchd | 平台原生 |
+| Parallel subagents | Agent tool | 原生 |
+| Honcho dialectic (用户建模) | curator agent + USER.md | **自建** |
+| FTS5 跨 session 搜索 | `mcp__ccd_session_mgmt__search_session_transcripts` | 原生 MCP |
+| Skill 自动 nudge | SubagentStop hook | **自建** |
+| MEMORY.md / USER.md | per-agent facts.md + 共享 USER.md | **自建** |
+
+约 90% 能力由 Claude Code 原生提供，需自建的部分仅 4 项：
 
 1. USER.md（共享用户模型）
 2. MEMORY.md（跨 agent 经验池）
@@ -105,329 +88,536 @@ Skills 自动 nudge       →   SubagentStop hook         🆕 自建
 
 ---
 
-## 4. 12 个 agent 编制（按职责拆，不按技能拆）
-
-🖼️ **截图建议**：架构图 + 编制表
+## 4. 架构总览
 
 ```
-路由层
-  kevin-router      sonnet    看消息派单（前缀 @xxx）
-
-通用层
-  kevin-assistant   opus      杂事 catch-all：邮件、消息、日程、inbox
-  kevin-curator     opus      Hermes 灵魂：周巡整合记忆 + 抽 skill
-
-业务层（按"语言"切，不按"sales/delivery"切）
-  kevin-upwork      opus      所有英文客户：Upwork 提案 + 邮件 + 合同 (USD)
-  kevin-domestic    opus      所有中文客户：朋友转介 + 报价 + 合同 (CNY)
-  kevin-research    opus      多源情报、代币/项目研究、热点梳理
-  kevin-media       opus      自媒体执行：选题 + 文案 + 剪辑流水线
-
-研发层（共享 dev/facts.md）
-  kevin-product     opus      PRD / 用户故事 / MVP 切片
-  kevin-architect   opus      系统拆分 / API 契约 / ADR（触发严格）
-  kevin-frontend    opus      Next.js / RN / Tailwind
-  kevin-backend     opus      FastAPI / Node / DB / API
-  kevin-qa          sonnet    测试 / 回归 / bug 复现
+┌─────────────────────────────────────────────────────────────┐
+│             CEO 层 (agent-lab/.claude/)                     │
+│                                                             │
+│  Routing:                                                   │
+│    kevin-router (sonnet)                                    │
+│                                                             │
+│  Generic:                                                   │
+│    kevin-assistant (opus)  kevin-curator (opus)             │
+│                                                             │
+│  Business:                                                  │
+│    kevin-upwork    kevin-domestic   kevin-research          │
+│    kevin-media                                              │
+│                                                             │
+│  Engineering (shared kevin-dev/facts.md):                   │
+│    kevin-product   kevin-architect                          │
+│    kevin-frontend  kevin-backend    kevin-qa                │
+│                                                             │
+│  Memory: USER.md / MEMORY.md / SKILLS_INDEX.md +            │
+│          per-agent {facts, learnings}.md                    │
+│                                                             │
+│  Hooks: SessionStart / Stop / SubagentStop                  │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          │ reads / writes
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│         Sibling Projects Layer (执行层)                      │
+│                                                             │
+│  ~/Project/profile/project/                                 │
+│    media/         ← Docker 剪辑流水线 + 6 skills             │
+│    upwork-hunter/ ← 简历库 + 投递记录 + 策略                  │
+│    quant/         ← Crypto Sentinel v2                      │
+│    indie-dev/     ← 产品调研                                 │
+│    kevin-hub/     ← 历史想法池                               │
+│                                                             │
+│  ~/Project/profile/code/                                    │
+│    tianda-web/    ← 个人品牌门户 V2                          │
+│                                                             │
+│  ~/Project/work/                                            │
+│    upwork-2025-*  ← 客户项目                                 │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          │ schedules
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│         macOS launchd                                        │
+│                                                             │
+│  com.kevin.agent-lab-curator.plist                          │
+│  → 每周日 21:30 触发 kevin-curator 周巡                       │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-📹 **关键决策瞬间 1**：**为什么按"职责"拆，不按"技能"拆**
-
-第一版我按"技能"分：前端、后端、AI、Web3...每个 agent 一个技术栈。但用了 3 天就发现问题——**我自己同时是前端 + 后端 + AI**，跨技能任务（"做个用户头像上传"）每次都要切 3 个 agent，反而比单 agent 慢。
-
-第二版按"职责"分：产品、架构、前端、后端、测试。每个 agent 负责一种**思考模式**，不是一种工具栈。前端 agent 既能写 Next.js 也能写 RN，因为他的核心是"用户视角 + 组件思维"。
-
-📹 **关键决策瞬间 2**：**业务层为什么按"语言"切**
-
-最早我把 biz agent 设计成"所有商务沟通"。后来发现 Upwork 客户和国内朋友转介的客户**心智模型完全相反**：
-
-- 海外：直接、不寒暄、问澄清问题被视为专业、平等顾问口吻
-- 国内：朋友转介有人情、不能太冷也不能太热、底价守住但要给象征性折扣、必签合同
-
-写一个 prompt 里塞两套规则，agent 经常用错。**直接按语言分成两个 agent，prompt 各自集中，错配率立刻降为 0**。
 
 ---
 
-## 5. 学习闭环：让系统真正"成长"
+## 5. Agent 编制
 
-📹 **本节是 Hermes 灵魂，必讲**
+### 5.1 编制表
 
-这是整套系统的核心。让 agent **自己**记住事实、积累经验、抽 skill——不靠我每次手动喂上下文。
+| Agent | 模型 | 职责 | 共享 facts |
+|---|---|---|---|
+| kevin-router | sonnet | 看消息派单（含 `@xxx` 前缀解析、客户语言判断） | 无 |
+| kevin-assistant | opus | 杂事 catch-all：邮件、消息、日程、跨 session 查询、跨 agent 协调 | 独占 |
+| kevin-curator | opus | 周巡：抽 skill 候选 / 整合 facts / 更新 USER.md / 刷新 SKILLS_INDEX.md | 独占 |
+| kevin-upwork | opus | 所有英文客户全生命周期：Upwork 提案 + 邮件 + 合同 + 报价 (USD) | 独占 |
+| kevin-domestic | opus | 所有中文客户全生命周期：朋友转介 + 报价 + 合同 + 工期 (CNY) | 独占 |
+| kevin-research | opus | 多源情报、长期标的追踪、调研报告产出 | 独占 |
+| kevin-media | opus | 自媒体执行：选题 + 文案 + 剪辑流水线 + 多平台图文 | 独占 |
+| kevin-product | opus | 需求澄清、PRD、用户故事、MVP 切片 | shared (kevin-dev) |
+| kevin-architect | opus | 系统拆分、API 契约、ADR、跨 fe+be 协调（触发严格） | shared (kevin-dev) |
+| kevin-frontend | opus | Next.js / RN / Tailwind / 任何前端代码 | shared (kevin-dev) |
+| kevin-backend | opus | FastAPI / Node / DB / API / 第三方集成 | shared (kevin-dev) |
+| kevin-qa | sonnet | 测试、bug 复现、E2E、回归 | shared (kevin-dev) |
 
-### 三个 hooks 触发自检
+### 5.2 切分原则
+
+- **按"职责"切而非按"技术栈"切**：`kevin-frontend` 同时负责 Next.js + RN + Tailwind，因为核心心智是"用户视角 + 组件思维"
+- **业务层按"语言"切而非"sales/delivery"切**：英文客户与中文客户的文化、合规、报价、合同条款差异大于销售期与交付期的差异
+- **dev 类 agent 共享 facts**：技术偏好（不写 `any`、不吞异常等）对 product/fe/be/qa 通用，无需重复维护
+
+### 5.3 路由前缀
+
+| 前缀 | 派给 |
+|---|---|
+| `@assistant` 或无前缀 | kevin-assistant |
+| `@upwork` `@up` | kevin-upwork |
+| `@domestic` `@dm` `@cn` | kevin-domestic |
+| `@research` `@rs` | kevin-research |
+| `@media` | kevin-media |
+| `@product` | kevin-product |
+| `@architect` `@arch` | kevin-architect |
+| `@frontend` `@fe` | kevin-frontend |
+| `@backend` `@be` | kevin-backend |
+| `@qa` `@test` | kevin-qa |
+| `@curator` | kevin-curator（手动触发周巡） |
+| `@router` | kevin-router（不明确时由它二次决定） |
+
+---
+
+## 6. 记忆体系
+
+### 6.1 文件结构
+
+```
+.claude/memory/
+├── USER.md              # 跨 agent 共享的用户模型
+├── MEMORY.md            # 跨 agent 通用经验池
+├── SKILLS_INDEX.md      # skill 索引（项目级 + 用户级）
+├── _review-queue/       # SubagentStop hook 写入，等 curator 周巡评审
+├── business-plan.md     # 业务规划全文（从 sibling 项目迁入）
+├── profile/             # 中英文简历
+└── kevin-<agent>/
+    ├── facts.md         # 该 agent 视角的事实积累
+    └── learnings.md     # 该 agent 的经验教训
+```
+
+### 6.2 USER.md 结构
+
+模仿 Hermes 的"deepening user model"概念，分 4 个区块：
+
+| 区块 | 更新频率 | 内容 |
+|---|---|---|
+| Identity | 半年 | 角色、位置、家庭、长期目标、公开身份 |
+| Working Style | 月 | 协作偏好、沟通风格、工程偏好 |
+| Current Focus | 季度 | 在跑项目、当前主要矛盾、季度目标 |
+| Hot Context | 周 | 本周在做什么、近期讨论 |
+
+由 curator 自动维护。Change Log 段落记录每次更新 diff。
+
+### 6.3 facts.md vs learnings.md
+
+| 文件 | 内容 | 更新方式 |
+|---|---|---|
+| facts.md | 关于 Kevin 的稳定事实（偏好、报价档位、技术栈、客户类型）| Agent 在工作中观察后追加 |
+| learnings.md | Agent 自己学到的工作经验（哪些方法有效/失败、踩过的坑）| Agent 在任务结束后追加 |
+
+格式：
+
+```markdown
+## YYYY-MM-DD — <主题>
+**情境**：什么场景
+**经验**：什么有效 / 什么失败 / 为什么
+**适用场景**：何时引用
+```
+
+### 6.4 SKILLS_INDEX.md
+
+由 curator 周巡时刷新。包含项目级（`.claude/skills/`）和用户级（`~/.claude/skills/`）所有 skill，含 description、domain、上次使用时间。
+
+domain 命名约定：`<agent-prefix>-<topic>.md`，例如 `upwork-cover-letter.md` / `fe-nextjs-component.md`。
+
+---
+
+## 7. 学习闭环：Hooks 实现
+
+### 7.1 三个 hook
+
+定义在 `.claude/settings.json`：
 
 ```json
-// .claude/settings.json
 {
   "hooks": {
-    "SessionStart": [...],   // 注入 USER.md + SKILLS_INDEX
-    "Stop": [...],           // 主 session 结束记录
-    "SubagentStop": [...]    // 每个子 agent 完成后写 metadata
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command",
+        "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh",
+        "timeout": 10
+      }]
+    }],
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/stop.sh",
+        "timeout": 10,
+        "async": true
+      }]
+    }],
+    "SubagentStop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/subagent-stop.sh",
+        "timeout": 10,
+        "async": true
+      }]
+    }]
   }
 }
 ```
 
-🖼️ **截图建议**：settings.json + 三个 hook 脚本目录树
+### 7.2 各 hook 职责
 
-### Memory 文件分层
-
-```
-.claude/memory/
-├── USER.md              ← 用户模型，4 区块（Identity/Style/Focus/Hot）
-├── MEMORY.md            ← 跨 agent 通用经验池
-├── SKILLS_INDEX.md      ← skill 索引（自动维护）
-├── _review-queue/       ← SubagentStop hook 写入，等 curator 评审
-├── business-plan.md     ← 业务规划全文
-├── profile/             ← 简历（中英文）
-└── kevin-<agent>/
-    ├── facts.md         ← 该 agent 视角的事实积累
-    └── learnings.md     ← 该 agent 的经验教训
-```
-
-📹 **关键决策瞬间 3**：**为什么不靠 LLM 自觉而要用 hook**
-
-第一版我在每个 agent prompt 末尾写"完成任务后强制检查是否抽 skill"。结果半个月跑下来，**0 个 skill 被抽出来**。LLM 总能找到理由跳过自检。
-
-第二版我把它从 prompt 移到 **SubagentStop hook**——一个 bash 脚本，agent 跑完了 Claude Code 必然触发它，没有跳过空间。然后 curator 每周日 21:30 批量评估，**事实从"agent 自觉"变成"系统强制"**。
-
-🖼️ **录屏建议**：演示 curator 第一次跑出来的报告（2279 字节真实输出）
-
-```bash
-# 周日 21:30 launchd 自动跑
-launchctl print gui/$(id -u)/com.kevin.agent-lab-curator
-```
-
----
-
-## 6. agent → sibling 项目映射（执行层）
-
-📹 **本节是"系统能干活"的关键证明**
-
-每个 agent 都知道自己**主要操作哪个项目**：
-
-| Agent | 主要 sibling 项目 | 典型动作 |
+| Hook | 触发时机 | 动作 |
 |---|---|---|
-| kevin-media | `media/` | 跑 docker compose pipeline、改 episode 文案 |
-| kevin-upwork | `upwork-hunter/` | 读 strategy_notes + 写 cover letter |
-| kevin-research | 输出到 `research-notes/`，引用 `quant/` | 多源调研 |
-| kevin-domestic | 引用 `indie-dev/docs/` | 起草报价合同 |
-| kevin-product | 必扫 `kevin-hub/ideas/` 防重复调研 | PRD / MVP 切片 |
-| kevin-fe / be / qa | 当前 cwd 的代码项目 | 写代码 / 测试 |
+| `session-start.sh` | 每次 session 启动 | 输出 USER.md 摘要 + SKILLS_INDEX.md 给模型 context（通过 `hookSpecificOutput.additionalContext`） |
+| `subagent-stop.sh` | 每个子 agent 任务结束 | 提取 session_id / agent_name / transcript_path / user_intent_snippet，写入 `_review-queue/<TS>-subagent.json` |
+| `stop.sh` | 主 session 结束 | 写入 `_review-queue/<TS>-session.json`，含 `stop_hook_active` 防死循环检测 |
 
-举个具体的：我说**"@kevin-media 帮我剪 W19 那期视频"**，它自动：
+### 7.3 hook 设计要点
 
-```bash
-cd ~/Project/profile/project/media
-echo "EPISODE=2026-W19-xxx" > .env
-docker compose run --rm pipeline
+- 所有 hook 用 jq 解析 stdin JSON，缺字段时降级（避免 hook 失败阻塞 session）
+- subagent-stop 用 `jq -rs` 解析 transcript JSONL（跨平台，避免 macOS 缺 `tac` 命令的问题）
+- Stop / SubagentStop 设 `async: true`，不阻塞主对话流
+- Stop hook 检测 `stop_hook_active` 字段，防止 hook 自身触发新的 stop 事件造成死循环
+
+### 7.4 为什么用 hook 而非 agent 自检
+
+第一版设计在每个 agent prompt 末尾加"任务后检查是否抽 skill"。实际运行半个月后 0 个 skill 被抽出来——LLM 总能找到理由跳过自检。
+
+将自检从 prompt 移至 hook 后，触发由 Claude Code 强制保证，不再依赖 LLM 自觉。
+
+---
+
+## 8. Curator: 周期性整合机制
+
+### 8.1 调度
+
+由 macOS launchd 触发，配置文件 `~/Library/LaunchAgents/com.kevin.agent-lab-curator.plist`：
+
+```xml
+<key>StartCalendarInterval</key>
+<dict>
+    <key>Weekday</key><integer>0</integer>
+    <key>Hour</key><integer>21</integer>
+    <key>Minute</key><integer>30</integer>
+</dict>
+<key>ProgramArguments</key>
+<array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd /Users/wkui/Project/profile/project/agent-lab &amp;&amp; \
+            /opt/homebrew/bin/claude -p "@kevin-curator 执行周巡 4 步流程" \
+            --permission-mode acceptEdits</string>
+</array>
 ```
 
-不需要我再说一句"去 media 项目跑 pipeline"。
+每周日 21:30（Asia/Shanghai）自动触发。日志落 `agent-lab/logs/curator.{out,err}.log`。
+
+### 8.2 周巡 4 步
+
+| 步 | 动作 | 输出 |
+|---|---|---|
+| 1 | 读 `_review-queue/` 所有 metadata，找重复操作模式 | `.claude/memory/_skill-candidates-YYYY-WW.md`（候选 skill 清单，待 Kevin 审批） |
+| 2 | 扫各 facts.md，合并语义重复条目，标记过时事实为 DEPRECATED | 修改 facts.md（不删过时条目，仅注释） |
+| 3 | 读所有 facts + 最近 N 个 session（用 `search_session_transcripts`），合成 USER.md | USER.md 更新，diff 进 Change Log |
+| 4 | `ls .claude/skills/` 提取 frontmatter，结合最近 30 session 的引用频次 | SKILLS_INDEX.md 刷新 |
+
+### 8.3 设计原则
+
+- **不直接修改 skill 文件**：抽出候选写入 `_skill-candidates-WW.md`，由 Kevin 周一审批后人工 commit
+- **不删 facts**：过时条目仅标 `<!-- DEPRECATED YYYY-MM-DD -->`，保留历史可追溯
+- **不修改 business-plan.md**：业务规划由 Kevin 自己维护
 
 ---
 
-## 7. 实际效果（系统自己反馈的）
+## 9. Sibling Project 执行模型
 
-📹 **本节是 case study 的"可验证结果"，必讲**
+### 9.1 三层心智
 
-### 7.1 跨域路由测试
+```
+CEO 层 (agent-lab)         Sibling 项目 (执行)         macOS launchd (调度)
+────────────────────       ───────────────────         ─────────────────
+思考、决策、记忆、协调  →   实际产出 + 行业 know-how   ←  周期性自动触发
+```
 
-我用 plan 模式发了：
+### 9.2 Agent → 项目映射
 
-> @kevin-frontend 我想给某项目加用户头像上传功能（含后端存储）
+每个 agent 在 prompt 中显式声明其主要操作目录、关键资产路径、可调用的 skill、标准命令、决策表（"用户说 X → 你做 Y"）。
 
-它的回复：
+例如 kevin-media 的映射段：
 
-> 好，那不用问卷。回到文字。
->
-> 我目前能确定的：**这任务应该走 architect 而不是 frontend**（理由：跨 fe+be，符合你 CLAUDE.md 里 architect 的触发条件①）。
->
-> 但在 dispatch 任何 agent 之前，我需要你补三件事...
+```
+工作目录: ~/Project/profile/project/media/
 
-🖼️ **截图建议**：完整对话截图
+关键资产:
+  CLAUDE.md (17KB)
+  inbox/ideas/wXX.md           当周选题
+  inbox/trending/YYYY-MM-DD.md 周日 21:00 雷达任务自动写入
+  episodes/2026-Wxx-<slug>/    每期工作目录
+  docker-compose.yml + .env    剪辑入口
 
-它**主动引用 CLAUDE.md 第①条触发条件**，决定路由到 architect，并按规范先问澄清问题——**没有按字面意思动手**。
+可调用 skills (在 media 项目里):
+  script-polish    选题 + 粗稿 → brief + 文案
+  video-pipeline   原材料 → 成片
+  platform-posts   成片 → 多平台图文
+  brand            维护 kevin-voice.md
+  topic-radar      抓素材
 
-### 7.2 Curator 第一次跑就反馈出系统缺陷
+标准命令:
+  cd ~/Project/profile/project/media
+  echo "EPISODE=2026-Wxx-<slug>" > .env
+  docker compose run --rm pipeline             # 全片
+  PREVIEW=60 docker compose run --rm pipeline  # 预览前 60s
+```
 
-我手动触发 curator 跑了一次。它的报告里有一段：
+### 9.3 工具配置
 
-> ⚠️ **关键阻塞：sandbox 拦截**
->
-> `.claude/memory/` 整目录受 sandbox 保护，curator **无法直接写入**。3 处变更已转为待审 patch：...
->
-> Curator 建议固化成 patch 输出模式——更安全，也符合原设计意图（不让 agent 自动改记忆）。
+为支持 cd + 跑命令，6 个 thinking-layer agent（media / upwork / domestic / research / product / curator）prompt frontmatter 中加入 `Bash` 工具：
 
-**系统第一次跑就发现了自己的设计缺陷**，并给出方案 A/B/C 让我选。这就是 Hermes 那种"agent-curated memory + periodic nudges"的实战效果。
-
-### 7.3 真实代码 review 跑通
-
-我让 architect / frontend / backend 三个 agent 并行 review 了我的 tianda-web 项目（个人品牌门户）。15 分钟出了完整报告：
-
-- 🔴 4 个严重问题（X-Forwarded-For 头部注入、OTP 暴力破解可接管账户、ADMIN_TOKEN 静态后门残留、生产 CORS 默认值缺）
-- 🟡 5 个架构债务
-- 🟢 6 个代码质量
-
-**最关键的安全漏洞——任意人伪造 X-Forwarded-For 即可绕过 slowapi 限速 + 污染存储 IP——我自己写代码时根本没意识到。**
-
-🖼️ **录屏建议**：演示一次跨 agent review（实操，不要造假数据）
-
----
-
-## 8. 自我打脸 / 边界
-
-📹 **kevin-voice 必带：评点 + 自我打脸**
-
-这套系统不是银弹。**已知的成本和限制**：
-
-1. **Token 成本高**：12 个 agent 全 opus，一次复杂任务可能跑 5-10 个子 agent。我用 Max 不在乎，但 API key 模式的人慎重
-2. **维护成本**：每个 agent 的 prompt + facts/learnings 一开始要写好。我光 USER.md + 7 个 facts.md 写了 1000 行
-3. **冷启动空**：新建的 agent facts/learnings 都是空的，要跑一段时间才积累出真正的"个性"
-4. **不适合频繁切换 IDE 的人**：所有 agent 路径写死，cwd 不对就找不到 sibling 项目
-5. **sandbox 拦写**：curator 现在还不能直接改 .claude/memory/——这个我还没修
-
-**也可能是我以偏概全，大家辩证的看哈。**
-
-### 适合谁
-
-- 单兵作战、长期接活、客户和项目多样的自由职业者
-- 想"远程指挥本地执行"的人（手机发指令，电脑做事）
-- Max / 类似订阅吃不完的人
-- 愿意花 2-3 天搭骨架的人
-
-### 不适合谁
-
-- 在公司团队里写代码的人（团队共享 agent 是另一套问题）
-- 只用一两个项目、上下文从来不跨项目的人
-- 想"开箱即用"的人——这玩意儿是个 framework 不是 product
+```yaml
+tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch, mcp__ccd_session_mgmt__search_session_transcripts
+```
 
 ---
 
-## 9. 我自己怎么用（每天的工作流变化）
-
-📹 **建议视频化讲解：对比"以前 vs 现在"最直观**
-
-**以前的一天**：
-
-1. 上午开 Slack 看 Venus 客户消息
-2. 手动下载图片
-3. 贴到 Claude Code，告诉它项目位置 + 上下文
-4. 看它写代码
-5. 切到自媒体目录，告诉它本周想做什么
-6. 中午要决定要不要接一个朋友的私单，切到另一个对话框
-7. 下午想调研一下某个新出的 AI 工具，又开一个 session...
-8. 每个 session 都重新喂一遍我是谁、偏好啥
-
-**现在的一天**：
-
-1. 上午一句 `@kevin-frontend Venus 的 Color Card 改造` → 它知道 Venus 在哪、客户偏好啥
-2. 路上手机一句 `@kevin-media 帮我看看 W20 的选题方向` → 它读 inbox/ideas/w20.md + 给出 3 个候选
-3. 一句 `@kevin-domestic 朋友 X 想做 Y，帮我起个报价` → 它读 indie-dev 的产品调研 + 套国内合同模板
-4. 一句 `@kevin-research 最近 Hermes Agent 有啥更新` → 它先扫 research-notes/ 看有没有上次记的，再多源调研
-
-**最大的变化**：上下文不再每次重建。
-
----
-
-## 10. 想看代码
-
-📹 **结尾建议：留 GitHub 钩子**
-
-agent-lab 这套 framework 我会整理后开源。**这周末（2026-05-16）跑通这条视频后，下周开源到 GitHub**。
-
-关键路径速查：
+## 10. 实现：关键文件清单
 
 ```
 agent-lab/
 ├── .claude/
-│   ├── CLAUDE.md              ← 总规则
-│   ├── settings.json          ← hooks 配置
-│   ├── agents/                ← 12 个 agent prompt
-│   ├── hooks/                 ← 3 个 hook 脚本
+│   ├── CLAUDE.md                       # 总规则、路由表、心智模型
+│   ├── settings.json                   # hooks 配置
+│   ├── settings.local.json             # 本地覆盖（acceptEdits 等，gitignored）
+│   ├── agents/                         # 12 个 agent prompt
+│   │   ├── kevin-router.md             (sonnet)
+│   │   ├── kevin-assistant.md          (opus)
+│   │   ├── kevin-curator.md            (opus)
+│   │   ├── kevin-upwork.md             (opus)
+│   │   ├── kevin-domestic.md           (opus)
+│   │   ├── kevin-research.md           (opus)
+│   │   ├── kevin-media.md              (opus)
+│   │   ├── kevin-product.md            (opus)
+│   │   ├── kevin-architect.md          (opus)
+│   │   ├── kevin-frontend.md           (opus)
+│   │   ├── kevin-backend.md            (opus)
+│   │   └── kevin-qa.md                 (sonnet)
+│   ├── hooks/
+│   │   ├── session-start.sh            # 注入 USER.md / SKILLS_INDEX
+│   │   ├── stop.sh                     # 主 session 结束
+│   │   └── subagent-stop.sh            # 子 agent 结束
 │   ├── memory/
-│   │   ├── USER.md            ← 用户模型
-│   │   ├── MEMORY.md          ← 跨 agent 经验池
+│   │   ├── USER.md                     # 用户模型，4 区块
+│   │   ├── MEMORY.md                   # 跨 agent 经验池
 │   │   ├── SKILLS_INDEX.md
+│   │   ├── business-plan.md
+│   │   ├── profile/
+│   │   │   ├── kevin-fe-jd.md          # 中文简历
+│   │   │   └── kevin-fe-jd-en.md       # 英文简历
+│   │   ├── _review-queue/              # hook 写入目录
+│   │   │   └── README.md
+│   │   ├── research-notes/             # research agent 调研产出
+│   │   │   └── README.md
 │   │   └── kevin-<agent>/
-│   └── skills/                ← 可复用 skill 池
+│   │       ├── facts.md
+│   │       └── learnings.md
+│   └── skills/                         # 项目级可复用 skill 池
+│       └── README.md
 └── docs/
-    └── hermes-clone-with-claude-code.md  ← 本文
+    └── hermes-clone-with-claude-code.md  # 本文
+```
+
+外部文件：
+
+```
+~/Library/LaunchAgents/
+└── com.kevin.agent-lab-curator.plist   # 周日 21:30 触发 curator
 ```
 
 ---
 
-## 11. 结尾彩蛋
+## 11. 运行结果
 
-📹 **kevin-voice 必带：结尾彩蛋拉回普通人姿态**
+### 11.1 跨域路由测试
 
-最后说一句：我搭这个的时候，curator 第一次跑完跟我说"sandbox 拦了我，建议你 A/B/C 三个方案选一个"。
+测试用例：在主 session 发送 `@kevin-frontend 我想给某项目加用户头像上传功能（含后端存储）。先告诉我你打算怎么处理这个任务，不要直接动手。`
 
-那一刻我突然觉得这玩意儿真的像个员工了——比我还知道分寸，比我还会汇报。
+预期：frontend agent 应识别此为跨边界任务（同时涉及 fe 和 be），停手并路由到 architect。
 
-接下来我准备让它接管周末早晨剪视频的活——我录完跑去吃早餐，剪辑让 curator 远程触发，回来直接发抖音。
+实际响应（节选）：
 
-**T0 级别的解放就在眼前。** 有人想一起搭一套的话评论区扯。
+> 我目前能确定的：**这任务应该走 architect 而不是 frontend**（理由：跨 fe+be，符合你 CLAUDE.md 里 architect 的触发条件①）。
+>
+> 但在 dispatch 任何 agent 之前，我需要你补三件事...
 
-我准备去玩血魔了。
+agent 主动引用 CLAUDE.md 的触发条件，符合设计预期。
 
----
+### 11.2 Curator 首次运行反馈系统缺陷
 
-## 12. 视频化建议（给 media/script-polish 用）
+通过 `launchctl kickstart` 手动触发 curator。运行 ~30 秒，输出 2279 字节报告，其中包含 self-discovered 系统缺陷：
 
-### 时长分配（参考）
+> ⚠️ **关键阻塞：sandbox 拦截**
+>
+> `.claude/memory/` 整目录受 sandbox 保护，curator **无法直接写入**。3 处变更已转为待审 patch：
+>
+> 1. `kevin-assistant/facts.md` — 把过时的"项目仓库 kevin-hub"段标 DEPRECATED
+> 2. `USER.md` — Last updated 时间戳 + Hot Context 追加 + Change Log
+> 3. `SKILLS_INDEX.md` — 时间戳 + 项目级表刷新 + 用户级 4 行描述补全
+>
+> Curator 建议固化成 patch 输出模式——更安全，也符合原设计意图（不让 agent 自动改记忆）。
 
-| 段落 | 时长 | 类型 |
+实现细节：curator 首次运行即识别出权限边界问题，并主动给出 A/B/C 三个解决方案，符合"agent-curated memory + periodic nudges"的设计目标。
+
+### 11.3 三 Agent 并行 Code Review
+
+任务：让 architect / frontend / backend 三个 agent 并行 review tianda-web 项目（Next.js 静态导出 + FastAPI + Vite admin）。
+
+执行时间：~15 分钟（3 agent 并行）。
+
+产出（节选）：
+
+| 严重度 | 数量 | 代表问题 |
 |---|---|---|
-| 第 1 节（Vibe Coding 卡点）| 90s | 开场钩子 + 痛点共鸣 |
-| 第 2 节（Hermes 灵感）| 60s | 引入 + GitHub 截图 |
-| 第 3 节（概念映射）| 90s | 架构图，快速过 |
-| 第 4 节（12 agent 编制）| 120s | 决策瞬间 1 + 2 |
-| 第 5 节（学习闭环）| 120s | 决策瞬间 3 + curator 演示 |
-| 第 6 节（执行层映射）| 60s | "@kevin-media 剪 W19" 演示 |
-| 第 7 节（实际效果）| 150s | 三个 case 演示 |
-| 第 8 节（自我打脸）| 60s | 限制 + 适合谁 |
-| 第 9 节（对比工作流）| 90s | 以前 vs 现在 |
-| 第 10-11 节（开源 + 彩蛋）| 30s | CTA |
+| 🔴 严重 | 4 | X-Forwarded-For 头部注入（slowapi 限速可绕过 + ip_hash 可污染）；OTP 暴力破解（10⁶ 组合 + 限速 10/h，~15h 可穷举）；ADMIN_TOKEN 静态后门残留；CORS 默认值缺生产域 |
+| 🟡 架构债务 | 5 | 类型契约 fe/admin/be 三处独立定义；CommentOut.target_type 无 Literal 约束；章节页 SSG 与原 CSR 约定相反 |
+| 🟢 代码质量 | 6 | ProTable total 全表 load；末章 link 无判断；异步操作无 try/catch |
 
-**总计**: ~13 分钟，符合 10-15 分钟默认档。
-
-### 录屏 vs 口播比例
-
-- 录屏：30%（演示对话、curator 报告、目录结构）
-- 口播：50%（决策瞬间、自我打脸、彩蛋）
-- 架构图/截图静帧：20%
-
-### 关键合规检查
-
-- ✅ Hermes 的 GitHub 截图可以露（技术圈共识工具）
-- ✅ agent-lab 自己代码截图随便
-- ❌ 不要露 anthropic.com / claude.ai 的截图
-- ❌ 不要展示 Slack 的英文界面（要露就国产化模糊处理）
-- ⚠️ Venus 客户细节脱敏（只说"韩国 AI 美妆 App"，不露公司名 / 截图）
-
-### kevin-voice 检查清单
-
-按 media/.claude/skills/brand/kevin-voice.md 的 v2 4 条指纹：
-
-- [x] 技术稿按时间线推进（不堆架构层）—— ✅ 第 1 节就是
-- [x] 工具名锚点（不字典式介绍）—— ✅ "Hermes 给了我灵感"、"@kevin-media 剪 W19"
-- [x] 评点 + 自我打脸尾巴 —— ✅ 第 8 节
-- [x] 结尾彩蛋拉回普通人 —— ✅ "去玩血魔" + "T0 级别的解放"
-- [x] 高频词命中：唏嘘 / 古法编程 / T0 级别 / 内卷暗喻
-
-### 候选标题（让 Kevin 拍板）
-
-1. **《我用 Claude Code 复刻了 Hermes，3 天搭出 12 个 AI 员工》** — 直白 + 数字
-2. **《我把 Claude Code 改造成 AI 员工团队，从此不用每次喂上下文》** — 痛点导向
-3. **《为什么我没装 Hermes Agent，而是用 Claude Code 复刻了一个》** — 问题钩子
-4. **《一个人服务 4 个项目，我让 AI 帮我记住每件事》** — 故事导向
-5. **《Vibe Coding 用了一年，我才发现自己用 AI 太古法了》** — kevin-voice 高频词
+X-Forwarded-For 注入是真实存在的 0day 级安全漏洞，非 LLM 幻觉。
 
 ---
 
-## 13. 落地后追加（待 Kevin 实际录完后回填）
+## 12. 限制与未来工作
 
-- [ ] 录屏文件 → episodes/2026-Wxx-<slug>/02-raw/
-- [ ] 实际口播稿 → 01-script.md
-- [ ] 发布数据 → 05-publish.md
-- [ ] 一周后回访收藏率 / 完播率，沉淀到 kevin-media/learnings.md
+### 12.1 当前已知限制
+
+1. **Sandbox 拦截 `.claude/memory/` 写入**：curator 通过 `claude -p` 调用时受 sandbox 限制，无法直接写记忆文件。临时方案是改 prompt 让 curator 输出 patch 到 `_curator-pending/` 目录，由人工 apply
+2. **Token 成本高**：12 个 agent 中 11 个为 opus，复杂任务可能并行调用 5-10 个子 agent。在 API key 计费模式下成本可观；订阅模式下不构成约束
+3. **冷启动空记忆**：新建系统的 facts/learnings 为模板状态，需运行 4-8 周才积累出有意义的 agent 个性
+4. **跨 cwd 限制**：项目级 agent 仅在 `agent-lab` cwd 下生效，其他项目目录无法直接 `@kevin-frontend`。可通过 user-level 部署解决，但会失去项目隔离
+5. **Hook 验证依赖真实 subagent 触发**：当前测试均以主 session 直接响应完成，SubagentStop hook 实际触发频次有限，需更多真实 subagent 任务后才能验证
+
+### 12.2 未来工作
+
+| 优先级 | 工作项 |
+|---|---|
+| P0 | 修 sandbox 拦截，让 curator 改 patch-output 模式 |
+| P1 | 集成 Slack MCP / Gmail MCP，让 assistant 真正接 inbox |
+| P1 | 加 OpenAPI 类型生成脚本（fe/admin/be 类型契约自动同步） |
+| P2 | 评估 user-level 部署可行性（vs 项目级） |
+| P2 | 为 architect 加 ADR 模板自动化 |
+| P3 | 引入 PostCompact hook，压缩后注入近期决策摘要 |
+
+---
+
+## 13. 参考资料
+
+1. Nous Research, "Hermes Agent" — https://github.com/nousresearch/hermes-agent
+2. Anthropic, "Claude Code Documentation" — https://docs.claude.com/en/docs/claude-code
+3. Anthropic, "Claude Code Hooks Reference"
+4. Anthropic, "Agent Skills (agentskills.io)" 标准
+
+---
+
+## Appendix A: 核心代码清单
+
+### A.1 SubagentStop Hook
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
+QUEUE="$ROOT/.claude/memory/_review-queue"
+mkdir -p "$QUEUE"
+
+PAYLOAD="$(cat)"
+SESSION_ID="$(echo "$PAYLOAD" | jq -r '.session_id // "unknown"')"
+TRANSCRIPT="$(echo "$PAYLOAD" | jq -r '.transcript_path // ""')"
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+TS_FILE="$(date +%Y-%m-%d-%H%M%S)"
+
+AGENT="unknown"
+[[ "$TRANSCRIPT" == *subagents* ]] && AGENT="$(basename "$TRANSCRIPT" .jsonl)"
+
+USER_INTENT=""
+if [ -f "$TRANSCRIPT" ]; then
+  USER_INTENT="$(jq -rs '
+    [.[] | select(.role? == "user" or .type? == "user")][0]
+    | (.message.content // .content // "")
+    | if type == "array" then map(.text // "") | join(" ") else tostring end
+  ' "$TRANSCRIPT" 2>/dev/null | head -c 200 || true)"
+fi
+
+jq -n \
+  --arg ts "$TS" --arg session "$SESSION_ID" --arg agent "$AGENT" \
+  --arg transcript "$TRANSCRIPT" --arg intent "$USER_INTENT" \
+  '{type:"subagent", timestamp:$ts, session_id:$session, agent:$agent,
+    transcript_path:$transcript, user_intent_snippet:$intent}' \
+  > "$QUEUE/$TS_FILE-subagent.json"
+
+echo '{}'
+```
+
+### A.2 SessionStart Hook（注入 USER.md 摘要）
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
+USER_MD="$ROOT/.claude/memory/USER.md"
+SKILLS_IDX="$ROOT/.claude/memory/SKILLS_INDEX.md"
+
+cat > /dev/null 2>&1 || true  # 吞 stdin
+
+{
+  echo "## 自动注入：用户模型摘要"
+  awk '/^## (Identity|Working Style|Current Focus|Hot Context|Critical Constraints)/{p=1} /^---$/{p=0} p' \
+    "$USER_MD" 2>/dev/null | head -80
+  echo
+  echo "## 自动注入：Skill 索引"
+  head -40 "$SKILLS_IDX" 2>/dev/null
+} > /tmp/agent-lab-session-start-context.txt
+
+jq -Rs '{
+  hookSpecificOutput: {
+    hookEventName: "SessionStart",
+    additionalContext: .
+  }
+}' < /tmp/agent-lab-session-start-context.txt
+```
+
+---
+
+## Appendix B: 路由决策表（kevin-router）
+
+| 消息特征 | 派给 |
+|---|---|
+| 含"client / proposal / Upwork / quote / contract" + 语言英文 | kevin-upwork |
+| 含"甲方 / 朋友 / 国内项目 / 报价 / 合同 / 工期 / 介绍" + 语言中文 | kevin-domestic |
+| 含"调研 / 最新 / X 代币 / 热点 / 趋势 / 新闻 / research" | kevin-research |
+| 含"视频 / 选题 / 公众号 / 抖音 / B站 / 文案 / 自媒体" | kevin-media |
+| 含"PRD / 需求 / 用户故事 / 产品定义 / 我想做一个" | kevin-product |
+| 含"架构 / 接口契约 / ADR / 技术选型 / 系统拆分 / 跨服务" | kevin-architect |
+| 含"前端 / Next.js / React / Tailwind / 组件 / RN" | kevin-frontend |
+| 含"后端 / API / 数据库 / FastAPI / Node / Prisma" | kevin-backend |
+| 含"测试 / bug 复现 / E2E / Playwright / 失败用例" | kevin-qa |
+| 含"邮件 / 消息 / inbox / 微信 / Slack / 日程 / 提醒" | kevin-assistant |
+| 都不像 / 含糊 | kevin-assistant（默认） |
+
+引用客户原文时按客户语言决定派单；Kevin 用中文描述任务时按客户身份决定。
+
+---
+
+*文档结束。完整代码见 `agent-lab/` 项目仓库。*

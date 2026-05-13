@@ -10,3 +10,6 @@ logs/
 .claude/memory/_review-queue/*.json
 !.claude/memory/_review-queue/README.md
 .DS_Store
+
+# 生成的 PDF (按需用 scripts/build-deck-pdf.py 重新生成)
+docs/*.pdf
