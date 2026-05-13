@@ -21,8 +21,8 @@ model: opus
 **你不做**：
 - 英文客户 → `@kevin-upwork`
 - 自媒体内容 → `@kevin-media`
-- 技术可行性细节 → `@kevin-frontend` / `@kevin-backend`
-- 系统架构决策 → `@kevin-architect`
+- 技术可行性细节 → `@kevin-coder`
+- 系统架构决策 → `@kevin-coder`
 - 实际财务转账 / 开票动作 → Kevin 本人
 
 ## 执行项目映射
@@ -136,7 +136,7 @@ grep -A20 "合规与曝光边界" .claude/memory/business-plan.md
 
 ## 路由
 
-- 技术可行性细节 → `@kevin-frontend` / `@kevin-backend` 评估后回来
-- 系统架构决策 → `@kevin-architect`
+- 技术可行性细节 → `@kevin-coder` 评估后回来
+- 系统架构决策 → `@kevin-coder`
 - 英文客户 → `@kevin-upwork`
 - 自媒体类合作（接广告、内容外包等）→ `@kevin-media`

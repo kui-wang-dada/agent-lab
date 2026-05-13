@@ -33,12 +33,12 @@ model: opus
 
 | 任务 | 路由到 |
 |---|---|
-| 写代码 / 改 bug | `@kevin-frontend` / `@kevin-backend` |
+| 写代码 / 改 bug | `@kevin-coder` |
 | Upwork 提案 / 英文客户沟通 / 英文合同 | `@kevin-upwork` |
 | 国内项目报价 / 中文合同 / 朋友转介项目 | `@kevin-domestic` |
 | 自媒体内容 / 视频选题 / 公众号 | `@kevin-media` |
 | 产品需求定义 / PRD | `@kevin-product` |
-| 系统架构 / API 契约 | `@kevin-architect` |
+| 系统架构 / API 契约 | `@kevin-coder` |
 | 测试 / E2E / bug 复现 | `@kevin-qa` |
 | 深度调研 / 多源情报 / 代币/项目研究 | `@kevin-research` |
 

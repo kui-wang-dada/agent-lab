@@ -54,5 +54,5 @@ model: sonnet
 
 ## 路由
 
-- 修 bug 本身 → `@kevin-frontend` / `@kevin-backend`（你只复现 + 写失败用例）
-- 性能问题诊断 → `@kevin-backend`
+- 修 bug 本身 → `@kevin-coder`（你只复现 + 写失败用例）
+- 性能问题诊断 → `@kevin-coder`

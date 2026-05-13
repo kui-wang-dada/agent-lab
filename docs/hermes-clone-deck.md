@@ -1,6 +1,6 @@
 ---
 title: 用 Claude Code 复刻 Hermes
-subtitle: 我的 12 人 AI 团队
+subtitle: 我的 10 人 AI 团队
 author: Kevin Wang (王奎)
 date: 2026-05-13
 type: 5 张幻灯片演讲源
@@ -11,7 +11,7 @@ ref: 完整技术细节见 hermes-clone-with-claude-code.md
 
 # 用 Claude Code 复刻 Hermes
 
-## 我的 12 人 AI 团队
+## 我的 10 人 AI 团队
 
 王奎 (Kevin Wang) · 2026-05
 
@@ -24,7 +24,7 @@ ref: 完整技术细节见 hermes-clone-with-claude-code.md
 ## 单 Agent 用了一年，4 个痛点
 
 - 每次新对话都要**重喂上下文**（我是谁、做什么、口味）
-- 单 Agent 同时演产品/前端/后端/测试，**注意力切换累**
+- 单 Agent 同时演产品/写代码/测试，**注意力切换累**
 - 上次学到的经验，下次 session **已遗忘**
 - 4 个并行项目（客户/自媒体/产品/量化）的 AI **互不通气**
 
@@ -44,7 +44,7 @@ ref: 完整技术细节见 hermes-clone-with-claude-code.md
 .claude/
 ├── CLAUDE.md         公司规则书（所有员工启动必读）
 ├── settings.json     自动化触发器配置
-├── agents/           12 个员工的工作描述（见下表）
+├── agents/           10 个员工的工作描述（见下表）
 ├── hooks/            3 个自动化脚本（员工不知不觉触发）
 ├── memory/           公司共享知识库
 │   ├── USER.md            关于"老板"的画像
@@ -58,7 +58,7 @@ ref: 完整技术细节见 hermes-clone-with-claude-code.md
 └── skills/           可复用技能库
 ```
 
-## 12 个员工（agents/ 下）
+## 10 个员工（agents/ 下）
 
 | 部门 | 员工 | 职责 |
 |---|---|---|
@@ -66,29 +66,33 @@ ref: 完整技术细节见 hermes-clone-with-claude-code.md
 | 通用 | assistant · curator | 杂事 / 周自动整理知识库 |
 | 业务 | upwork · domestic | 英文客户 / 中文客户 |
 | 业务 | research · media | 多源调研 / 自媒体执行 |
-| 研发 | product · architect | PRD / 接口契约 |
-| 研发 | frontend · backend · qa | 前端 / 后端 / 测试 |
+| 研发 | product · coder · qa | PRD / 全栈实现 / 测试 |
+
+> **coder 一体化**：架构 + 前端 + 后端合并。AI 没有"一个人不可能精通所有"的人类约束，复杂任务现派 subagent。
 
 ---
 
 <!-- ============ Slide 4 / 5 — 一个例子 ============ -->
 
-# 一个例子：跨员工自动协作
+# 一个例子：复杂任务自己拆，并行干
 
-**👤 输入**：`@kevin-frontend` 我想给某项目加用户头像上传功能（含后端存储）
+**👤 输入**：`@kevin-coder` 帮我审一下 tianda-web 项目（前端 + 后端 + 后台 3 个子项目）
 
-**🤖 前端工程师的回复**（要点）：
+**🤖 coder 的回复**（要点）：
 
-- 这任务**应该走架构师而不是我** —— 跨前后端，符合规则里架构师触发条件①
-- 在分派前先补 3 个澄清问题：哪个项目 / 当前技术栈 / 存储约束
-- 回完我让架构师出方案再分派
+- 这是大型 review，单 session 撑不住，**我拆 3 个并行 subagent**：
+  1. spawn architect 视角的 reviewer：审跨边界契约、ADR 缺失
+  2. spawn frontend 视角的 reviewer：审 UI、i18n、静态导出违规
+  3. spawn backend 视角的 reviewer：审 API、安全、限流、密钥
+- 三个并行跑，15 分钟后聚合
 
-**🔍 它真正做的事**
+**🔍 真实结果**
 
-- 读消息 → 自检"跨了边界" → 查规则书 → 找到对应触发条件
-- **主动停手**，不按字面意思动手；反向问澄清
+- 找出 **4 个 🔴 严重安全漏洞**（含 X-Forwarded-For 注入这种真 0day）
+- 5 个🟡 架构债务（含 fe/admin/be 类型契约 3 处独立定义）
+- 6 个🟢 代码质量问题
 
-→ 这是**规则在自动工作**，不是我教它这次该怎么做。
+→ 一个 coder + spawn 并行 subagent ＝ 既不预设细分员工，又能多视角覆盖。
 
 ---
 

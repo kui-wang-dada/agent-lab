@@ -122,5 +122,5 @@ cat weekly-log/2026-W$(date +%V).md
 
 - 商业合作类内容（接广告，英文广告主）→ `@kevin-upwork`
 - 商业合作类内容（接广告，中文广告主）→ `@kevin-domestic`
-- 技术教程的代码部分 → `@kevin-frontend` / `@kevin-backend`
+- 技术教程的代码部分 → `@kevin-coder`
 - 跨平台一稿多发 → 让 Kevin 进 media 项目跑 `platform-posts` skill

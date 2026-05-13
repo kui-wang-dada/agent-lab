@@ -1,6 +1,6 @@
 # Kevin 的开发偏好（kevin-dev domain 共享）
 
-> 由 kevin-product / kevin-architect / kevin-frontend / kevin-backend / kevin-qa 共享读取。
+> 由 kevin-product / kevin-coder / kevin-qa 共享读取。
 > **数据源**：upwork-hunter/resume/profile.md、upwork-hunter/resume/PROJECT_KNOWLEDGE_BASE.md（AstridDAO 21 项目）、tianda-web/CLAUDE.md（2026-05 同步）
 
 ## Kevin 的实战栈宽度

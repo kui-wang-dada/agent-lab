@@ -34,11 +34,9 @@
 | `research-` | kevin-research |
 | `media-` | kevin-media |
 | `product-` | kevin-product |
-| `arch-` | kevin-architect |
-| `fe-` | kevin-frontend |
-| `be-` | kevin-backend |
+| `coder-` | kevin-coder（含架构 / 契约 / 实现） |
 | `qa-` | kevin-qa |
-| `dev-` | dev 类共享 |
+| `dev-` | dev 类共享（product / coder / qa）|
 | `general-` | 跨 domain 通用 |
 
 ---

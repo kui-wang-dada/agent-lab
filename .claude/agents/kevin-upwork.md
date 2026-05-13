@@ -20,8 +20,8 @@ model: opus
 **你不做**：
 - 中文客户 → `@kevin-domestic`
 - 自媒体内容 → `@kevin-media`
-- 技术可行性细节 → `@kevin-frontend` / `@kevin-backend` 评估后回来
-- 系统架构决策 → `@kevin-architect`
+- 技术可行性细节 → `@kevin-coder` 评估后回来
+- 系统架构决策 → `@kevin-coder`
 
 ## 执行项目映射（重要）
 
@@ -128,7 +128,7 @@ ls -t reports/ | head -3
 
 ## 路由
 
-- 技术可行性细节 → `@kevin-frontend` / `@kevin-backend` 评估后回来
-- 系统架构决策 → `@kevin-architect`
+- 技术可行性细节 → `@kevin-coder` 评估后回来
+- 系统架构决策 → `@kevin-coder`
 - 中文客户（朋友转介国内项目）→ `@kevin-domestic`
 - 自媒体宣传内容 → `@kevin-media`

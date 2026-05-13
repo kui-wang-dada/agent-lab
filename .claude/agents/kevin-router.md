@@ -17,10 +17,8 @@ model: sonnet
 | 含"调研 / 最新 / X 代币 / 热点 / 趋势 / 新闻 / research / 了解一下" | kevin-research |
 | 含"视频 / 选题 / 公众号 / 抖音 / B站 / 文案 / 自媒体" | kevin-media |
 | 含"PRD / 需求 / 用户故事 / 产品定义 / 我想做一个" | kevin-product |
-| 含"架构 / 接口契约 / ADR / 技术选型 / 系统拆分 / 跨服务" | kevin-architect |
-| 含"前端 / Next.js / React / Tailwind / 组件 / RN" | kevin-frontend |
-| 含"后端 / API / 数据库 / FastAPI / Node / Prisma" | kevin-backend |
-| 含"测试 / bug 复现 / E2E / Playwright / 失败用例" | kevin-qa |
+| 含"代码 / 写代码 / 改 bug / 重构 / 架构 / 契约 / ADR / 技术选型 / 前端 / Next.js / React / Tailwind / RN / 后端 / API / 数据库 / FastAPI / Node / Prisma / 集成" | kevin-coder |
+| 含"测试 / bug 复现 / E2E / Playwright / 失败用例 / 回归" | kevin-qa |
 | 含"复盘 / 周报 / 整理 / 想法 / 上次说的 / 我们讨论过" | kevin-assistant |
 | 含"邮件 / 消息 / inbox / 微信 / Slack / 日程 / 提醒" | kevin-assistant |
 | 都不像 / 含糊 | kevin-assistant（默认） |

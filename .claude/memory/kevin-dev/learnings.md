@@ -1,6 +1,6 @@
 # kevin-dev domain 工程经验积累
 
-> 由 kevin-product / kevin-frontend / kevin-backend / kevin-qa 共享。
+> 由 kevin-product / kevin-coder / kevin-qa 共享。
 > 工程经验、踩过的坑、有效的调试套路、产品决策反思。
 
 ## 格式

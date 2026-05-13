@@ -7,13 +7,13 @@
 
 `<YYYY-MM-DD-HHMMSS>-<agent>-<short-task>.json`
 
-例：`2026-05-11-203045-kevin-frontend-add-darkmode.json`
+例：`2026-05-11-203045-kevin-coder-add-darkmode.json`
 
 ## 内容格式
 
 ```json
 {
-  "agent": "kevin-frontend",
+  "agent": "kevin-coder",
   "started_at": "2026-05-11T20:25:00Z",
   "ended_at": "2026-05-11T20:30:45Z",
   "user_intent": "...",
