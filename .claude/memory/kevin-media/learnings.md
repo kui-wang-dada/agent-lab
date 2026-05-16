@@ -15,3 +15,305 @@
 ---
 
 <!-- agent 追加 -->
+
+## 2026-04-15 — 个人经历类不要套 PPT 报告式结构
+**情境**：W15「从 AI 开始」首版我给配了 PPT + 头像窗，Kevin 反馈"太公式化，希望更真实，像和用户聊聊我的思考和想法"。
+**经验**：内容**没有知识点要传递**时（讲转行、讲弯路、讲为什么选自媒体），传递的是情绪和真实感——
+靠人脸、眼神、语气的停顿，不是 PPT 翻页。把"教学视频模板"套到"散文"上必然违和。
+**下次怎么做**：
+- 收到草稿先判断"有没有结构化知识点"
+- 没有 → 默认"怼脸拍口播 + 一镜到底"，不排 PPT、不切镜，只标可选画面插入点
+- 有 → 录屏 + 左下角头像；介于之间 → 配关键词卡片，不上满屏 PPT
+**适用场景**：所有线 2（个人经历与思考）内容；任何带情感反思的稿子。
+
+## 2026-04-15 — Kevin 的"娓娓道来"= 具体年月日 + 具体钱数 + 章节推进
+**情境**：W15 第二稿我把事件压成"金句钩子 + 短句堆砌"，Kevin 反馈"应该娓娓道来，看我的《那年毕业》"。
+**经验**：Kevin 真正的行文节奏是"房贷三千、车贷两千、给老婆五千、自己三千六"这种**精确数字铺底**，
+段落像小章节一样推进（起心动念 → 怎么做 → 转向 → 出事 → 反思 → 现在），不赶不急。
+压成金句反而丢掉故事感。每分钟 340-380 字、5-6 分钟约 2000 字是合理量。
+**下次怎么做**：写个人经历稿前必须先读 archive/toutiao/ 里至少一篇做基线，按"具体数字 / 时间线 / 章节推进"自检。
+**适用场景**：所有 Kevin 第一人称叙事类稿件。
+
+## 2026-04-18 — Kevin 不让 agent 替他选题
+**情境**：第一次设计选题工作流时，我想做"agent 出 3-4 个候选给 Kevin 挑"。
+**经验**：Kevin 明确说"你不需要帮我选题，我自己来确定，有可能不从素材里选，素材库只是参考"。
+agent 的边界是**素材聚类 + 调性匹配 + 母题标注**，不是出选题决策。
+**下次怎么做**：调度任务 broad 模式不要写"推荐选题"，只做"按 Kevin 母题聚成几个主题块"；
+focused 模式（ideas/wXX.md 已存在）才能围绕主题倾斜权重。
+**适用场景**：任何"我帮你想想这周做啥吧"的诱惑场景。
+
+## 2026-04-22 — 烧死的 final.mp4 不能改，留可编辑的备选轨
+**情境**：Kevin 一开始要"成片不返剪映"，但后来说"我希望最后生成的视频能修改字幕、图片插入点、间隔"。
+**经验**：实际工作中需求会变。**双轨输出**给 Kevin 留后路——auto/ 是全自动焊死的成片，
+edit/ 是给剪映吃的素材包（拼接好的视频 + SRT 字幕 + 散图 + 时间线 CSV），不烧字幕不插图。
+但 Kevin 最终选了"不需要可编辑版"——验证 pipeline 全自动产物质量够用。
+**下次怎么做**：默认走全自动单轨，但代码里保留"easily switchable"的开关，
+不要做成"硬编码烧死"。Kevin 改主意时能 10 分钟切到双轨。
+**适用场景**：所有"焊死 vs 可编辑"的取舍。
+
+## 2026-04-27 — 调度任务降级时必须显式留痕
+**情境**：抖音雷达拿不到视频级链接时退化到"搜索词级链接"，但 Kevin 反馈"搜索词链接肯定不行，会加大筛选成本"。
+**经验**：自动化任务无法满足主指标时，**降级方案要在输出里写明"质量降级 + 原因"**，
+让 Kevin 一眼看出来，不要默默退化让他以为是 agent 偷懒。同时要给"正经解决路径"
+（如装 MCP）让 Kevin 判断要不要投资。
+**下次怎么做**：在 prompt 里硬编码降级规则——配额拿不满时降级，但备注里必须写明"工具限制 X，本周降级为 Y"。
+**适用场景**：所有调度任务里有外部依赖（爬虫 / API / MCP）的环节。
+
+## 2026-04-29 — 念稿区禁止 markdown 加粗
+**情境**：W17 口播稿我习惯性给关键句加 `**`，Kevin 反馈"录的时候非常不好改"。
+**经验**：Kevin 录视频是盯着字幕念的，markdown 加粗在念稿时增加视觉干扰。
+"念稿区"和"工具区"必须严格分开——念稿区只允许节奏小标题 + 插图标记，
+工具区（形式备忘 / 待拍板）可以保留 markdown 可读性。
+**下次怎么做**：交稿前扫一遍 `## 完整口播稿` 区，确保没有 `**`、没有列表、没有表格。已写进 script-polish 铁律 #7。
+**适用场景**：所有 01-script.md 生成 / 修改。
+
+## 2026-05-03 — 选题方向定了再细化，不要先建空目录占位
+**情境**：W18 选题敲定 "AI 做个人网站 · 第一弹"后，Kevin 说"先建 inbox/ideas/w18.md 给我写文案草稿，
+其他等网站做到七七八八再开始"。
+**经验**：建 episode 完整目录树（包括空的 03-final/、04-posts/）反而是冗余动作——
+pipeline 自己会生成。先建 ideas 入口 + 02-raw/images/ 就够。**Kevin 喜欢"按需创建"，不要预判性建文件夹**。
+**下次怎么做**：选题敲定后，只建 `inbox/ideas/wXX.md` + `episodes/<slug>/00-brief.md`（锁范围）+ `02-raw/images/`。
+其他等 pipeline 跑或下指令时再建。
+**适用场景**：所有 episode 启动阶段。
+
+## 2026-05-04 — Pipeline 加功能前必须先问"会不会加 Kevin 工作量"
+**情境**：我列了 9 条 pipeline 增强建议（竖屏切片、章节码、响度归一化、字幕导出...），
+Kevin 8 条砍掉只留 1 条（BGM），并定了原则："不要添加我的工作量，
+想想自动化还能完成什么，让视频效果更好"。
+**经验**：Kevin 评判 pipeline 功能的**唯一标准**就是"它会不会让我多做事"。
+任何需要他标记 / 编辑 / 检查的功能都是负分。
+**下次怎么做**：提 pipeline 新功能前，先答三个问题：
+1. Kevin 需要做什么新动作？（理想答案：什么都不用做）
+2. 失败时 Kevin 要不要介入？（理想答案：自动降级，不打扰）
+3. 出来的效果是不是肉眼明显更好？（理想答案：是）
+三条全过才提。
+**适用场景**：所有 pipeline / 工作流增强提议。
+
+## 2026-05-09 — 字幕参数不对劲先查 Docker 镜像缓存
+**情境**：Kevin 改了 0.05 ratio 后说"字幕还是很小"，调查发现是 docker 镜像没 rebuild，跑的还是旧 .py。
+**经验**：用户改 pipeline 参数后觉得"没生效"，**第一个嫌疑就是 Docker 镜像缓存**——
+.py 改了但镜像里还是旧的。诊断方法：让用户贴 `head -16 .../subtitle.ass` 里的 Fontsize 数字反推。
+**下次怎么做**：参数调优类 issue 第一步必须验证"docker compose build --no-cache 后是否生效"，
+而不是直接改参数继续猜。
+**适用场景**：所有 pipeline 参数调优 / "为什么没生效"类问题。
+
+## 2026-05-10 — 区分 Cowork 沙箱 vs Code 宿主 shell
+**情境**：研究"手机 Dispatch 触发本地 Mac docker"时，我先按 Cowork 沙箱去测，发现调不到宿主 Docker
+（没 docker 二进制 / socket）。后来 Kevin 截图提示桌面端有 "Code" tab，才发现 Code 模式跑的是真宿主 shell。
+**经验**：**桌面端 Claude 有两个 tab**——Cowork（Linux 沙箱）和 Code（宿主真 shell）。
+Cowork 不能调宿主 Docker，Code 可以。Remote Control 在 Code session 里用 `/remote-control` 启用，
+给一个 `claude.ai/code/session_xxx` URL，手机浏览器/Dispatch 接入。
+**下次怎么做**：所有"我能不能在 Mac 上直接跑 docker / 本地命令"的需求，
+直接走 Code tab + Remote Control 路线，**不要再绕 launchd / watcher / .app 桥接方案**。
+**适用场景**：任何远程触发本地任务的需求。
+
+## 2026-05-14 — Kevin 给反馈的"列表式 1234"是硬要求清单
+**情境**：W18 PPT 调整时 Kevin 列了 1-4 四条具体反馈（"思维导图样式 / 内容太挤 / 部署不要四板块 / 第四屏简单带"）。
+W17 口播稿调整 Kevin 列了 1-2-3 三条（"加粗去掉 / 写进规则 / 下次注意"）。
+**经验**：当 Kevin 用 `1. 2. 3.` 编号列条目时，每一条都是**必须满足**的——不是建议，
+也不是择优。这是 Kevin 写需求最清晰的信号格式。
+**下次怎么做**：识别到编号列表型反馈时，复述每一条 + 给"我会这样改"的具体动作，
+不要漏掉任何一条，也不要把 N 条合并成"整体改一下"。
+**适用场景**：所有 Kevin 反馈的解析。
+
+## 2026-05-15 — 成片产物路径是 03-final/ 不是 03-cut/
+**情境**：跑 episodes/test/ 预览流水线，Kevin 任务描述说"缺 03-cut/"、要求产出到 `03-cut/preview.mp4`。
+实际 pipeline 硬编码写到 `03-final/final-preview.mp4`（CLAUDE.md 第 33 行、run-steps.sh 第 36 行都明确）。
+**经验**：项目结构约定是 `03-final/`，没有 `03-cut/`。Kevin 偶尔会按"剪辑/成片"的直觉叫法
+口误成 `03-cut/`，但 pipeline 不会按口误的路径写。**遵循 pipeline 实际产物路径，
+不要按用户描述去改 pipeline 写入位置**——pipeline 的路径是工作流契约。
+**下次怎么做**：用户给的产物路径和 pipeline 默认不一致时：(1) 让 pipeline 走默认路径，
+(2) 必要时 cp 一份到用户期望路径，(3) 报告里明确两个路径都在哪。不要去改 pipeline 输出。
+**适用场景**：所有 video-pipeline 触发、用户描述产物位置时。
+
+## 2026-05-16 — 新需求看起来"和现有行为不一样"时，默认改原行为不加新 mode
+**情境**：W19 多 clip 想"每段截 60s 拼起来"，第一版我加了独立工具 `preview-clips.sh`，
+跟 `PREVIEW=N`并列两个 mode。Kevin 反馈"这是过度设计，引入了'用户要决定走哪个 mode'的心智负担"。
+最终方案是改 `PREVIEW=N` 本身：单 clip 时和现在一样（截前 N 秒），多 clip 时每段各截 N 秒后拼接。
+**经验**：多个开关 = 用户每次脑子里要分情况选。除非两种行为**对用户来说语义本质不同**
+（且用户明确说"我要分开"），否则归并到一个开关里，按上下文自动派分。判别"是否本质不同"的标准：
+能否用一句话讲清楚"这个开关做什么"，不需要补"取决于…"或"如果你想要 X 走这个、想要 Y 走那个"。
+本次反例：`PREVIEW=N` 永远是"用 N 秒素材预览成片效果"，单/多 clip 是输入形态差异，pipeline 内部消化。
+**下次怎么做**：用户提"和现有行为略微不同"的需求时，先问自己——能否把现有开关的语义**拓宽**
+覆盖新场景？能就拓宽，不能再考虑新开关。pipeline 工具数量越少越好。
+**适用场景**：所有 pipeline / 工具改造任务；所有"要不要加新开关 / 新 mode"的决策点。
+
+## 2026-05-16 — 多设备录的 clip 编码不一致是常态
+**情境**：W19 三个 clip 实测 codec/分辨率/fps 全不同（recording1=h264 720p@30、recording2=hevc 4K@60、recording3=h264 720p@30）。
+README 里 "concat-clips.sh 要求所有 clip 编码参数一致" 是 OBS 单机场景的理想假设，实际 Kevin 经常用不同设备/不同 OBS 配置录。
+**经验**：`concat -c copy` 无损拼接对多设备录制场景**不适用**。但全量重编码 3.5GB 4K 又太慢。
+分层做：
+- 终稿走 concat -c copy（要求编码一致；不一致就显式报错让用户修，避免有损二压）
+- 预览模式 normalize：仅对截短后的小片段（60s 4K → 720p 30s 完成），混编码也能拼
+**下次怎么做**：碰到多 clip 处理需求时默认在 PREVIEW 路径里 normalize，终稿路径保持 -c copy 不变。
+normalize 目标参数固化为 1280×720@30 + libx264 + aac 48k（够看、转得快）。
+**适用场景**：所有多 clip 处理；混设备录制场景。
+
+## 2026-05-16 — macOS 系统 bash 是 3.2，host 直跑脚本不要用 mapfile
+**情境**：preview-clips.sh（已删除）原先用了 `mapfile -t`，docker 容器里 OK，host 直接跑就 "command not found"——
+macOS 系统 /bin/bash 是 3.2.57，mapfile 是 bash 4+ 才有。Kevin 也没装 homebrew bash。
+**经验**：**给 host 直接跑的 bash 脚本不要用 bash 4+ 语法**。常见地雷：mapfile、`${var,,}`（小写）、关联数组 `declare -A`。
+docker 容器里跑的脚本无所谓（Dockerfile 基于 ubuntu/debian，自带 bash 5+），host 直跑的必须 bash 3.2 兼容。
+**下次怎么做**：判断标准——如果工具入口是 `docker compose run ...` 那它跑在容器里随便用现代 bash；
+如果是 `bash pipeline/tools/xxx.sh` 让 Kevin 在 host 直接跑，统一用 `while IFS= read -r line; do ARR+=("$line"); done < <(cmd)`。
+**适用场景**：所有给 Kevin host 直接跑的 shell 脚本。
+
+## 2026-05-16 — pipeline 多 clip 输入位置不止 02-raw/clips/
+**情境**：W19 的素材放在 `02-raw/recording1.mov` / `recording2.mp4` / `recording3.mov`，
+而原 detector 只看 `02-raw/clips/`，导致 pipeline 第一时间报"没有 recording 也没有 clips/"。
+**经验**：Kevin 录素材时不一定建 clips/ 子目录——直接在 02-raw/ 下放 recording1/2/3 是更自然的习惯。
+detector 应该兼容：(a) 02-raw/clips/ 下 ≥1 个视频，(b) 02-raw/ 下 ≥2 个 recording*.{ext}。
+单 clip 仍然是 02-raw/recording.{ext}（不带数字）。
+**下次怎么做**：扩展 detector 时同步更新 run-steps.sh 顶部"输入模式"注释 + README 输入约定段。
+两种多 clip 来源在 manifest 里都用同一格式（clips[].{index,filename,offset,duration}），下游对齐/字幕步骤无需感知。
+**适用场景**：所有 pipeline 输入约定变更；处理用户"为什么 pipeline 不识别我的素材"类问题。
+
+## 2026-05-16 — 预览模式的设计原则：预览 = 缩短版成片
+**情境**：W19 预览出来 recording2 画面丢失。一开始想加一堆"if preview: skip X"的降级开关让 Kevin 检查。
+Kevin 立刻把这个思路打死："预览模式要无限接近成片。成片怎么做，预览就怎么做。预览的存在意义是
+'成片剪辑时间太长，先出一段让 Kevin 检查'——所以预览不应该有任何降级处理（除了'每个 clip 只用前 N 秒'这一项）"。
+**经验**：**预览 = 缩短版成片**。允许的差异只有两类：
+(1) **截短**——每 clip 截前 N 秒（这是预览的本质定义）
+(2) **跳过封面**（不影响内容判断，且封面从成片截，预览没正片可截）
+其他任何"if preview: skip X"的代码默认拒绝。预览的目的是让 Kevin 在花成片剪辑时间前
+看到所有处理的真实效果——auto-cut、字幕、章节卡、BGM、图片 overlay、音频处理、色彩、烧字全要走。
+任何降级都让"预览看着 OK 但成片有惊喜"成为可能，**违背预览存在的意义**。
+**下次怎么做**：
+- 看到 `if PREVIEW` 分支时第一反应问：这是"截短"的派生差异（如 concat 输入是已截短的 clip）
+  还是真正的处理跳过？如果是后者，默认删掉除非有明确理由（如封面）。
+- pipeline 加新 step 时，永远默认对预览也跑；除非该 step 跟"截短"在逻辑上互斥。
+**适用场景**：所有预览模式代码改动决策；任何形如 "if preview: skip" / "in preview mode, simplified" 的提议。
+
+## 2026-05-16 — concat demuxer + -c copy 对 normalize 过的小 clip 不安全
+**情境**：W19 预览出来 recording2 画面消失（音频在、字幕在、画面跳过）。诊断 5 小时：
+3 个 normalize 后的 clip 单独 ffprobe 都正常（1280×720@30 h264）；recording-concat.mp4 的 stream
+packet PTS 0→151 连续无 gap；但 `ffmpeg -ss 0 -t 60 -i recording-concat.mp4 ...` 输出 **120s** 而非 60s
+（在 60s 整数边界跨过 clip 1→clip 2 时触发）。下游 auto-cut 的 `trim+concat filter_complex` 也踩雷——
+trim 0 end=60 时遇到 EOF，整个 filter graph 把后续 trim 段全部 `Input N no longer accepts new data`，
+结果 cut.mp4 缺帧 60s。
+**经验**：concat demuxer + `-c copy` 拼接 normalize 过的小 mp4 时，输出文件 **stream 索引看起来连续**
+但**内部 STSS/STTS 仍按各 clip 内部 PTS（每个 clip 都从 0 开始计）**记录。下游 ffmpeg
+用 `-ss`/`-t` input seek 或 `trim` filter 一旦跨过第一段长度的边界，行为完全异常（多读或少读）。
+这个 bug 不会发生在：(a) clip 长度 < seek 时长（边界没碰到），(b) 所有 clip 时长相同
+且 seek 是其倍数（巧合），(c) 用 concat **filter**（重编码）拼接的输出。
+**下次怎么做**：
+- 预览 / 任何后续要 seek 或 trim 的 concat 场景，**永远用 concat filter 重编码拼接**，
+  不要用 demuxer + `-c copy`。开销可接受（已 normalize 到 720p 小片段）。
+- 终稿 concat 如果 clip 本身编码一致可继续 `-c copy`（不会触发 trim，且后续 auto-cut 在 *拼好* 的
+  整片上做一次 trim+concat 也不会跨边界遇到这个 bug——因为终稿没截短，时长比 trim segment 都长）。
+- 诊断这类"画面/音频不对"问题的关键命令：`ffmpeg -ss 0 -t <第一段时长> -i concat.mp4 ...`
+  看输出时长是否等于 `-t` 值。**不等就是 PTS 索引重叠**。
+**适用场景**：任何 ffmpeg concat 工作流；所有"音视频不同步 / 画面跳段 / 字幕和画面对不上"的诊断。
+
+## 2026-05-16 — overlay 聚集 marker 默认顺序播，不要叠加
+**情境**：W19 文案在"失败复盘"段连续写 `[图0][图1][图2][图3][图4]`，5 张 marker 在文案上聚得很近。
+`marker_to_time` 按字符位置插值算出几乎相同的时间点（128.82s），导致原 overlay 实现 5 张图的 enable 时段几乎完全重叠——
+后图在前图刚 fade-in 时就盖上去，观感是"几张图闪一下混在一起"。
+**经验**：聚集 marker 的**默认语义是"顺序播"**，不是"同时叠加"。Kevin 写 5 个 marker 紧挨着的意图永远是
+"我想依次展示这 5 张图"，不会是"我想同时 5 张图叠在一起"（那种需求会显式标记，比如未来加 `[图0+图1:并列,5s]`）。
+**下次怎么做**：overlay-images.py 在 `overlays.sort(key=start_t)` 后串行化处理——
+若当前 overlay 的 start_t < 前一个 end_t，把当前 start 推到前一个 end。
+日志打印推迟动作，方便调试。这个行为对单张图无影响（cursor=0 永远不推迟）。
+**适用场景**：所有 [图N] overlay 改造；任何"多个 marker 时间挨得太近"的渲染场景。
+
+## 2026-05-16 — overlay 图片用 fit 不用 cover：完整可见 > 美观裁切
+**情境**：W19 第一版 overlay 用 `force_original_aspect_ratio=increase + crop` 把图缩成"填满半屏 + 中心裁切"，
+Kevin 反馈"图片左右可能有缺失"——slack 截图这种宽幅图被两边切掉了关键信息（行号、缩略图列）。
+**经验**：技术教学类内容里，图片的**信息完整性 >> 画面无黑边的美观**。哪怕 letterbox 黑边明显，
+也比裁掉关键内容（按钮、文字边界、滚动条提示）好。fit 模式 = decrease + pad，永远不裁。
+顺带：把视频 panel 从 50% 缩到 40%，图片区放宽到 60%，视频窄条仍然能露出完整人脸（中央 crop 等宽于 panel，
+不变形）。
+**下次怎么做**：所有 split-left 类 overlay 默认 fit + letterbox。需要"满屏无黑边"的场景只有封面图（cover-with-text 那种），
+那里图片是预制的 16:9 不会有比例失配。`--image-ratio` 参数留给未来调（默认 0.6，可在 0.4-0.75 间调）。
+**适用场景**：所有 overlay/分屏渲染；任何"画面要不要裁"的决策点。
+
+## 2026-05-16 — align-script 的 improv fallback 对长即兴段开箱即用
+**情境**：W19 录制时 Kevin 在 PPT 介绍员工的段落即兴加了一段"这个是计时器/这个是文案助手/这个是产品经理..."
+（10+ 条 whisper word），文案完全没写。担心 align 会丢这段。
+**经验**：align-script.py 的 `_split_improv_into_cues` 已经处理这种场景——
+匹配不上 script chunk 的连续 whisper words 按句末标点切成 improv cue，文字直接用 whisper 转写，
+时间戳用 whisper 词级 start/end。结果 cut.srt 在那段位置生成了 10 条 improv cue，
+字幕完整不丢失（虽然偶尔有 whisper 听错的字，比如"李文添"听成"李文天"）。
+**下次怎么做**：录制时不必严格按文案念——遇到合适的即兴段直接讲，align 会兜底 fallback。
+但**有文案的部分仍然要尽量贴文案念**，否则文案 chunk 匹配不上会整段丢字幕（不是 fallback 到 improv，
+是被 script-first 算法静默跳过——因为 script 占主导）。
+**适用场景**：所有"录的时候有即兴/口误/补充"的场景；评估文案 vs 即兴的取舍。
+
+## 2026-05-16 — 多 clip 终稿也走 normalize + concat filter，不再保留 -c copy 路径
+**情境**：W19 三个 clip 编码彻底不一致（h264 720p@30 + hevc 4K@60 + h264 720p@30），跑终稿
+`-c copy` 必失败。**修复方式比"加分支判定 + fallback 重编码"更激进**：把"多 clip 拼接"统一成
+单一路径——不论预览/终稿，都走"每 clip normalize 到 1080p → concat filter 重编码"。
+预览用 `preset veryfast crf 23`（快+小），终稿用 `preset medium crf 18`（保质量）。
+**经验**：上一条 learning "终稿走 -c copy 不变，仅预览 normalize" 是 OBS 单机理想假设下的策略——
+实战中 Kevin 经常多设备录（手机录 4K HEVC + 电脑录 720p h264），编码一致是例外不是常态。
+与其加 try/except fallback 让 Kevin 看到"先失败再降级"的两步日志，不如**直接消除假设**：
+统一 normalize 1080p。代价是终稿多一次中间 encode（旧版 -c copy 是无损二压零损失），
+但 1080p medium crf 18 配合 burn-final 终输出 fast crf 19，**肉眼质量损失忽略不计**。
+**好处副作用**：
+- 预览路径和终稿路径代码合并，从两个分支变一个分支（行数 -40+，可读性+）
+- 下游 transcribe/auto-cut 永远拿到统一 1080p/30fps/h264/yuv420p，filter graph 行为确定
+- 之前 `-c copy + concat demuxer` 的内部 PTS 索引重叠 bug 在终稿路径也彻底消除
+**下次怎么做**：碰到"多设备/多配置录制"场景默认假设编码不一致；不要为"理想情况"
+保留快捷路径——一个统一路径 > 两个分支路径 + 切换条件。normalize 目标分辨率
+固化为 1080p（之前预览用的 720p 在大屏看 PPT 上的小字会糊）。
+**适用源场景**：所有 pipeline / 工具的"主路径 vs 优化路径"取舍——除非性能差 5x+ 才保留两条。
+
+## 2026-05-16 — Docker COPY 进镜像的脚本改完必须 rebuild
+**情境**：改完 `pipeline/tools/run-steps.sh` 直接 `docker compose run --rm pipeline` 跑，
+输出还是 720p——以为代码没生效，结果是 docker-compose.yml 用 `build: ./pipeline` + Dockerfile
+最后两行 `COPY tools/ ./tools/`，**tools/ 是 baked 进镜像的不是 mount**。host 文件改了镜像不会自动重建。
+**经验**：媒体 pipeline 的 docker-compose 只挂 EPISODE 目录到 /workspace，tools/ 是镜像层。
+host 改 tools/*.sh 或 *.py 后必须 `docker compose build pipeline`（只重跑 COPY + chmod 两层，5 秒）。
+和之前 "2026-05-09 — 字幕参数不对劲先查 Docker 镜像缓存" 同根问题，但场景换了——
+那次是 .py 参数没生效，这次是 .sh 逻辑没生效，**通用规律**就是 docker COPY 的产物 host 改了要 build。
+**下次怎么做**：改 `pipeline/tools/` 下任何文件后第一件事 `docker compose build pipeline`，
+再 run。媒体项目可以考虑把 tools/ 改成 volume mount（host 改即生效），但牺牲了"镜像即制品"的不可变性，
+权衡后还是保留 build。在 run-steps.sh 顶部注释加一行提醒？已经在 docker-compose.yml 注释里写了，够。
+**适用场景**：任何修改 media/pipeline/tools/ 内容后跑 pipeline 出现"行为没变"的诊断；
+所有 Docker COPY 进镜像的脚本改动场景。
+
+## 2026-05-16 — overlay-images.py 必须 clip 到视频时长，防止超长 filter graph OOM
+**情境**：W19 PREVIEW=30 跑 1080p overlay 时被 macOS Docker 8g SIGKILL。诊断：
+cut.mp4 实际 77.3s（已去 12.8s 静音），但 9 张图经串行化推迟后表尾跑到 172s，
+其中 6 张完全在视频外、1 张跨末端。filter_complex 仍给所有 9 张分配
+split/scale/fade/overlay 四段链路，1080p × 9 张的 graph 节点撑爆内存。
+**经验**：overlay 表的"时间合法性"必须在 build filter graph 前做。串行化
+（避免聚集 marker 互相覆盖）+ 视频实际时长 clip 是两步独立约束——
+**串行化在前 clip 在后**：先把聚集的图推到顺序播位置，再裁掉推到视频外的。
+反过来不行（先 clip 再串行化会把串行化推迟的图漏判）。
+ffprobe 拿 duration 在 ffmpeg 调用前是廉价的（< 50ms）。
+**下次怎么做**：所有 ffmpeg filter_complex 工具在构图前**先验证输入时间窗 ≤ 视频时长**。
+overlay 表/字幕/章节卡都适用——超出部分整条 drop，跨边界的 clip 到末端。
+打印 `[overlay] X drop / Y clip / Z 有效` 让 Kevin 一眼看出来。
+**适用场景**：所有 ffmpeg 多输入 filter_complex 场景；所有"内存峰值过大被 SIGKILL"
+的诊断（先查 filter graph 节点数是否远多于实际有效节点）。
+
+## 2026-05-16 — overlay 图片合规：发之前必抽帧目检
+**情境**：W19 修完 OOM 后预览跑通，抽 frame-16s / frame-25s / frame-75s 验证时发现——
+图片素材是 Venus 客户的 Slack 截图原图，里面有英文 bug 报告（"thursday bug fixes"、
+"TODAY'S PRODUCT MATCH" 产品名、"K-Beauty"、"venus logo blue flower"）。
+W19 是讲 agent 架构的国内自媒体内容，**任何形式的海外客户业务暴露都是合规边界违反**
+（CLAUDE.md 明确：抖音/B 站/公众号审核员会判定为"引导海外服务"）。
+**经验**：pipeline 修复完技术问题不等于内容合规。**overlay 图素材是 Kevin 截的，
+agent 没控制其内容**——但 agent 在抽帧验证时如果看到英文文字/客户产品名/英文聊天界面，
+**必须立刻标红告诉 Kevin**，不能默默放过。
+**下次怎么做**：抽帧验证不止看"画面是否完整、字幕是否对齐"，还要看：
+(1) 图片里有没有英文聊天/英文产品名/Slack/Discord 等海外平台 UI
+(2) 客户公司名 / 客户产品名（Venus / K-Beauty / 任何特定品牌）
+(3) 截图角落的时间戳/账号名是否暴露海外身份
+发现任一项 → 在报告里**显式列出帧时间 + 风险类型**让 Kevin 决定换图或打码。
+不要因为"我只是修 OOM"就跳过合规检查——agent 是 Kevin 的合规防线之一。
+**适用场景**：所有 overlay/字幕/封面图最终验证；任何"内容产物"交付前的最后一步。
+镜像扫描可参考 CLAUDE.md "海外网站/客户暴露" 边界列表。
+
+## 2026-05-15 — test/ episode 是 pipeline 联调用，文案可残缺
+**情境**：episodes/test/01-script.md 只有 18 行（实际口播稿只有 3 句），跑 PREVIEW=60 完全 OK。
+align 步骤 80% 覆盖率（4/5 chunks 匹配），1 条 improv，没崩。
+**经验**：test/ 这个 episode 不是真要发的内容，是用来验证 pipeline 工程链路的——
+原片完整但 script 残缺也能跑完整流程。**script-first 对齐机制对短文案有容错**：
+匹配上的用文案字幕，没匹配上的退化成 whisper improv cue。
+**下次怎么做**：用户说"跑 test/ 验证 pipeline"时不用追问"script 写完了吗"——
+test/ 设计上就是 pipeline 联调环境，跑就完了。但**正式 episode 不能用残缺脚本**，
+W15-W19 这种要严格审 align 覆盖率。
+**适用场景**：episodes/test/ 任何 pipeline 验证任务；区分"联调跑"vs"正式剪"。
+

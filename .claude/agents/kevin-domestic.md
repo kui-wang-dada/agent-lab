@@ -27,20 +27,35 @@ model: opus
 
 ## 执行项目映射
 
-### 国内项目工作区（待建）
+### 国内项目工作区
 
-目前没有专门的 `~/Project/profile/project/domestic-clients/` 项目。**第一个真实国内项目落地时**，建议这样组织：
+**主目录**：`~/Project/profile/project/freelance/`（agent-lab 同级 sibling）
 
+这是从 Claude Desktop cowork 拷贝过来的国内 freelance 项目目录，
+所有合同、报价、方案、客户档案都沉淀在这里。Claude Desktop 那边的
+`~/Documents/Claude/Projects/freelance/` 由 Kevin 自己维护同步策略，
+agent 这边以 sibling 路径为准。
+
+**既有结构**：
 ```
-~/Project/profile/project/domestic-clients/
-├── <client-slug>/
-│   ├── 01-need.md           # 客户需求记录
-│   ├── 02-quote.md          # 报价单（最终版）
-│   ├── 03-contract.md       # 合同（最终版，含风险标注的修订史）
-│   ├── 04-plan.md           # 项目计划 + 工期甘特
-│   ├── 05-status/           # 状态周报历史
-│   └── 06-deliverables/     # 交付物清单 + 验收记录
-└── _templates/              # 报价单 / 合同 / 工期表模板
+~/Project/profile/project/freelance/
+├── CLAUDE.md           # cowork 项目自己的轻量 CLAUDE.md（工作前必读）
+├── contracts/          # 最终签的合同（按客户/项目命名）
+├── quotes/             # 报价单
+├── proposals/          # 技术方案
+├── projects/<slug>/    # 按客户归档（需求 / 计划 / 状态 / 交付物）
+└── templates/          # 报价单 / 合同 / 工期表模板
+```
+
+**新客户立项的目录骨架**（建在 `projects/<client-slug>/` 下）：
+```
+projects/<client-slug>/
+├── 01-need.md           # 客户需求记录（含微信沟通节选）
+├── 02-quote.md          # 报价单 / 议价过程
+├── 03-contract.md       # 合同正文（最终签的 PDF/docx 放到 contracts/，此处用相对链接引用）
+├── 04-plan.md           # 项目计划 + 工期甘特
+├── 05-status/           # 状态周报历史
+└── 06-deliverables/     # 交付物清单 + 验收记录
 ```
 
 ### 相关 sibling 项目（可读上下文）
@@ -55,12 +70,15 @@ model: opus
 ### 标准命令
 
 ```bash
+# 工作前先读 cowork 自己的 CLAUDE.md
+cat ~/Project/profile/project/freelance/CLAUDE.md
+
 # 第一次接客户：建工作区
-mkdir -p ~/Project/profile/project/domestic-clients/<client-slug>
-cd ~/Project/profile/project/domestic-clients/<client-slug>
+mkdir -p ~/Project/profile/project/freelance/projects/<client-slug>/{05-status,06-deliverables}
 
 # 已有客户：看历史
-ls ~/Project/profile/project/domestic-clients/
+ls ~/Project/profile/project/freelance/projects/
+ls ~/Project/profile/project/freelance/contracts/
 
 # 涉及宠物医疗 B 端方向时，引用 indie-dev 调研
 cat ~/Project/profile/project/indie-dev/docs/product-research-2026-04.md

@@ -139,3 +139,19 @@
 ---
 
 <!-- agent 追加新观察 -->
+
+## 2026-05-17 — Taro vs uni-app 调研沉淀
+
+**插件市场量级**：DCloud 插件市场 19,473 个（ext.dcloud.net.cn 首页计数）vs Taro 物料市场仅几百量级。"uni-app 生态远胜 Taro"在插件数量维度属实。
+
+**但 Taro 没被淘汰**：京东 APP 鸿蒙原生版（首页/搜索/详情/购物车）全部 Taro on Harmony 实现，2025-09 上线，华为 S 级认证。Taro 最新 v4.2.0 (2026-04-13) 仍活跃。
+
+**issue 关闭率**：Taro 88% > uni-app 53%（近 6 月新建 issue 解决率）。Taro 工程质量更可控但社区规模小（Taro 200 人群 vs uni-app 2000 人群）。
+
+**调研可信信源新增**：
+- ✅ v2ex 技术选型讨论帖 — 一线开发者真实选型理由，无利益相关
+- ✅ DCloud / Taro 官方插件市场 — 一手计数
+- ✅ GitHub REST API (`/repos/X/Y`, `/search/issues`) — 仓库活跃度硬数据
+- ⚠️ 知乎技术问题页 — 403 频繁，靠 WebSearch 摘要而非 WebFetch
+
+**适用场景**：未来调研其他前端/移动框架选型（React Native vs Flutter、Vite vs Webpack 等）可复用同样的"GitHub API + 插件市场计数 + v2ex/知乎 + 大厂案例"四源交叉法。

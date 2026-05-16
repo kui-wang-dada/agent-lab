@@ -12,7 +12,7 @@ logs/
 .DS_Store
 
 # 生成的 PDF (按需用 scripts/build-deck-pdf.py 重新生成)
-docs/*.pdf
+docs/
 
 # Playwright MCP 运行时日志
 .playwright-mcp/

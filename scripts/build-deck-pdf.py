@@ -187,6 +187,271 @@ body > p:last-child {
     color: #c47f3a;
     font-weight: 600;
 }
+
+/* ==================================================
+   Slide 卡片布局（w19-deck 用 · 嵌入 HTML 触发）
+   ================================================== */
+
+.slide {
+    /* 不再用 page-break-after，靠 markdown 的 <hr> 分页（已有规则） */
+    display: flex;
+    flex-direction: column;
+    min-height: 7in;
+}
+
+.slide-head {
+    border-bottom: 3px solid #c47f3a;
+    padding-bottom: 0.18em;
+    margin-bottom: 0.3em;
+}
+
+.slide-head h1 {
+    font-size: 28pt;
+    color: #c47f3a;
+    margin: 0;
+    border: none;
+    padding: 0;
+    font-weight: 700;
+}
+
+.slide-head .sub {
+    margin: 0.15em 0 0 0;
+    font-size: 13pt;
+    color: #6b6b6b;
+    font-weight: 400;
+}
+
+/* 两列横向并排 */
+.cols-2 {
+    display: flex;
+    gap: 0.4in;
+    margin-top: 0.15in;
+}
+
+.cols-2 > .block {
+    flex: 1;
+    min-width: 0;
+}
+
+.block h2 {
+    font-size: 14pt;
+    color: #2c3e50;
+    margin: 0 0 0.35em 0;
+    padding-bottom: 0.15em;
+    border-bottom: 1px dashed #d6c4a8;
+}
+
+.block.highlight {
+    background: #faf6ef;
+    border-left: 4px solid #c47f3a;
+    padding: 0.3in 0.32in;
+    border-radius: 4px;
+}
+
+.block.highlight h2 {
+    color: #c47f3a;
+    border-bottom: none;
+    margin-bottom: 0.3em;
+}
+
+.reasoning {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.5em 0;
+}
+
+.reasoning li {
+    padding: 0.15em 0 0.15em 1em;
+    position: relative;
+    font-size: 11.5pt;
+    color: #444;
+}
+
+.reasoning li::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: #c47f3a;
+    font-weight: 700;
+}
+
+.decision {
+    margin-top: 0.4em;
+    padding: 0.3em 0.5em;
+    background: white;
+    border: 1px solid #c47f3a;
+    border-radius: 4px;
+    font-size: 12pt;
+    color: #2c3e50;
+}
+
+.decision strong {
+    color: #c47f3a;
+}
+
+/* 4 卡 2x2（slide 1 用） */
+.cards-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.18in;
+}
+
+/* 8 卡 4x2（slide 2 用） */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 0.16in;
+    margin-top: 0.2in;
+}
+
+.card {
+    background: #fdfaf5;
+    border: 1px solid #e8dcc2;
+    border-top: 3px solid #c47f3a;
+    border-radius: 4px;
+    padding: 0.18in 0.2in;
+    line-height: 1.35;
+}
+
+.card h3 {
+    font-size: 12.5pt;
+    color: #c47f3a;
+    margin: 0 0 0.1em 0;
+    font-weight: 700;
+    font-family: "JetBrains Mono", "SF Mono", "PingFang SC", monospace;
+}
+
+.card .card-sub {
+    font-size: 10pt;
+    color: #2c3e50;
+    margin: 0 0 0.3em 0;
+    font-weight: 600;
+}
+
+.card p:not(.card-sub) {
+    font-size: 9.8pt;
+    color: #555;
+    margin: 0;
+    line-height: 1.45;
+}
+
+/* 任务旅程横向流程（slide 3 用） */
+.journey {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.05in;
+    margin: 0.25in 0;
+}
+
+.step {
+    flex: 1;
+    background: #fdfaf5;
+    border: 1px solid #e8dcc2;
+    border-top: 3px solid #c47f3a;
+    border-radius: 4px;
+    padding: 0.2in 0.18in 0.18in 0.18in;
+    text-align: center;
+    position: relative;
+    min-width: 0;
+}
+
+.step-num {
+    width: 32pt;
+    height: 32pt;
+    line-height: 32pt;
+    border-radius: 50%;
+    background: #c47f3a;
+    color: white;
+    font-size: 16pt;
+    font-weight: 700;
+    margin: 0 auto 0.15em auto;
+    text-align: center;
+}
+
+.step h3 {
+    font-size: 13pt;
+    color: #2c3e50;
+    margin: 0.1em 0 0.1em 0;
+    font-weight: 700;
+}
+
+.step .step-time {
+    font-size: 9pt;
+    color: #c47f3a;
+    margin: 0 0 0.4em 0;
+    font-style: italic;
+}
+
+.step p {
+    font-size: 9.8pt;
+    color: #555;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.step code {
+    font-size: 8.5pt;
+    background: #f4f1ec;
+    padding: 0.08em 0.25em;
+    border-radius: 2px;
+    display: inline-block;
+    margin-top: 0.15em;
+    /* CJK fallback：PingFang SC 必须在前，否则 Menlo 把中文渲染成 ? */
+    font-family: "PingFang SC", "Hiragino Sans GB", "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+.arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c47f3a;
+    font-size: 22pt;
+    font-weight: 700;
+    flex: 0 0 0.18in;
+}
+
+.closing {
+    margin-top: 0.2in;
+    padding: 0.22in 0.3in;
+    background: #faf6ef;
+    border-left: 4px solid #c47f3a;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.closing p {
+    margin: 0.15em 0;
+    font-size: 12pt;
+    color: #2c3e50;
+}
+
+.closing .dim {
+    font-size: 10.5pt;
+    color: #888;
+    font-style: italic;
+}
+
+.foot {
+    margin-top: auto;
+    text-align: right;
+    color: #b0a48a;
+    font-size: 9.5pt;
+    border-top: 1px solid #ece4d2;
+    padding-top: 0.1em;
+}
+
+/* slide head 里的 h1 不要被全局 h1:first-of-type 覆盖 */
+body > .slide:first-of-type .slide-head h1 {
+    text-align: left;
+    font-size: 28pt;
+    margin-top: 0;
+}
+
+body > .slide:first-of-type .slide-head .sub {
+    text-align: left;
+    font-size: 13pt;
+}
 """
 
 

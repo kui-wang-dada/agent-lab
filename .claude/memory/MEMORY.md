@@ -19,6 +19,8 @@
 
 ## Entries
 
+- [Venus 架构 reference](kevin-dev/venus-architecture.md) — 默认技术栈 + 架构模式，新项目选型参考
+
 <!-- 第一条示例（Kevin 或 curator 验证后保留 / 删除）：
 
 ## 2026-05-11 — Hermes 学习闭环靠 hook 才能跑起来

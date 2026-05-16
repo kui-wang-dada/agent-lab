@@ -38,7 +38,13 @@
       }
     ]
   },
-   "permissions": {
-    "defaultMode": "acceptEdits"
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Edit(.claude/memory/**)",
+      "Write(.claude/memory/**)",
+      "Edit(.claude/skills/**)",
+      "Write(.claude/skills/**)"
+    ]
   }
 }

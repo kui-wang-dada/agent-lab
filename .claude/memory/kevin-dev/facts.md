@@ -151,3 +151,98 @@
 ---
 
 <!-- agent 追加新观察的代码偏好 -->
+
+---
+
+## 2026-05-17 — Venus 项目沉淀的默认技术栈
+
+> **来源**：Venus 韩国 AI 美妆 App（开发 1 年+，~/Project/work/upwork/2025/4-6-rn-ai/）
+> 这些是 Kevin 当前**最熟练、默认会选用**的技术栈。新项目除非有明确理由换，否则按这套。
+> 详细架构 reference 见 [venus-architecture.md](venus-architecture.md)（有具体 file:line 引用）。
+
+### RN 端（高确信，Venus 主端）
+- **Expo 53 managed + RN 0.79.5 + React 19**，新架构**关闭**（`newArchEnabled: false`）—— 第三方库兼容性大于性能收益
+- **导航**：React Navigation v7（native-stack + bottom-tabs + material-top-tabs）；按业务域切 module navigator 文件
+- **状态**：Zustand v5 + slice 模式，**单一 root store** `useRootStore` 由 N 个 slice 合并（user / scan / routine / product / clinic / task / chat / doctor / stripe / library / colorConsult）
+  - 中间件链：`persist(subscribeWithSelector(devtools(...)))`
+  - 跨组件读多个值必须 `useShallow`
+  - persist 用 `partialize` 白名单（只持久化 token / userInfo / 少量 cache），用 AsyncStorage backend
+  - `resetAllStores` 全局重置函数（logout 时用）
+- **网络**：axios 单例 + request/response interceptor（`src/store/api/`），request 注入 Bearer token，response 检测 `x-new-token` header 实现无感刷新，401 自动触发 logout
+- **表单**：暂未深度用 react-hook-form（RN 端逻辑分散在 store action 里）
+- **动画**：reanimated 3 + @shopify/react-native-skia（人脸扫描特效）+ lottie-react-native
+- **相机 / 人脸**：**react-native-vision-camera 4.7** + react-native-vision-camera-face-detector
+  - 自封装 `useVisionCamera` hook（含 Android CameraX 黑屏自动重挂载 / 设备列表 polling fallback）
+- **多语言**：**Lingui v5**（`@lingui/macro` + `useLingui()` + `t` tag），husky pre-commit 自动跑 `npm run lingui`，支持 en/ko/es/ja
+- **推送**：expo-notifications + Customer.io（`customerio-expo-plugin` + `customerio-reactnative`）
+- **IAP / 订阅**：**RevenueCat (`react-native-purchases`)** 是 source of truth；Stripe SDK 用于 web payment sheet，**Stripe RN SDK 锁定 0.62.0**（更高版本 Xcode 26.4 崩）
+- **错误监控**：**Sentry**（`@sentry/react-native`），setUser 在 userInfo 变化时同步
+- **分析**：Amplitude + Branch.io（attribution / deep link）
+- **路径别名**：`@/` → `src/`，所有内部 import 用 `@/`
+- **构建**：EAS Build + OTA Update（`update:preview` / `update:prod`），runtime version 2.1.2
+
+### Web 端（高确信，三种栈共存）
+
+| 项目 | 栈 | 用途 | 何时选 |
+|---|---|---|---|
+| **venus-skin-review** | Next.js 15 + shadcn/ui + Context | 医生评审门户 | 需要 SSR / 后端代理 / SEO |
+| **venus-skincare-box** | Next.js 15 + shadcn/ui + Context | 内部 admin（订单/包/库存） | 同上，部署 Vercel |
+| **venus-internal-admin** | **Vite + React 18 + react-router 6 + Zustand + shadcn/ui** | 任务端 admin | 重交互 / 不需要 SEO / 想要更快 dev server |
+
+- **UI 库**：**shadcn/ui**（Radix 原语 + Tailwind）+ Lucide icons + sonner（toast） —— 所有 web 端统一
+- **状态**：Next.js 项目用 **React Context + custom hooks**；Vite admin 项目用 **Zustand**（同 RN 端 root store 模式）
+- **表单**：react-hook-form + zod + @hookform/resolvers
+- **i18n**：自研轻量 i18n（locale 文件 + `t()` 函数）；Vite admin 用 Lingui
+- **DB 访问**：Next.js 内部 API 用 `pg.Pool`（不引入 ORM）；主数据走外部 FastAPI
+- **HTTPS 代理模式**（venus-skin-review）：production 经 Next.js proxy `/api/proxy/doctor` 调 HTTP 后端，避免 mixed-content；dev 直连
+- **图表**：recharts
+- **日期**：date-fns（部分项目用 luxon）
+
+### 后端（高确信，Python 3.11 + FastAPI 0.111）
+
+- **架构**：分层 Routes → Services → Models / Schemas，每层独立目录
+- **路由自动发现**：`api/v1/router.py` 用 `importlib` 扫描 `routes/` 目录，每个文件 export `router` 自动挂载
+- **ORM**：**SQLAlchemy 2.0**（同步 API + Session）—— 注意：Venus 用同步 Session 而非 async，连接池 `pool_size=10 + max_overflow=20`，`pool_pre_ping=True`
+- **Pydantic v2**：schemas 用 `BaseModel` + `ConfigDict(from_attributes=True)`
+- **配置**：`pydantic-settings.BaseSettings` + `Field(alias="ENV_VAR_NAME")`，env 文件按 `APP_ENV` 切换（`config/environments/{development,production,test}.env`）
+- **鉴权**：JWT HS256（python-jose），多种 token 类型用 `type` 字段区分（user / doctor / skinbox）；passlib + bcrypt
+- **Token 自动刷新**：自研 `TokenRefreshMiddleware`，剩余时间 < 阈值时在 response header 注入 `X-New-Token`，客户端 axios interceptor 检测后更新 —— **优于传统 refresh token 流程**（少一次往返）
+- **错误处理模板**：每个 route 三层 catch（`HTTPException` re-raise、`ValueError → 404`、`Exception → 500 + logger.error exc_info=True`）—— 全项目一致
+- **AI 集成**：OpenAI SDK + LangChain + Pinecone（RAG），不用 Anthropic（客户已锁 OpenAI）
+- **微服务**：4 个独立 FastAPI 进程共享 PostgreSQL
+  - `fastapi-backend`（主业务，8000）
+  - `ai-skin-analysis`（人脸分析，8002，Roboflow + MediaPipe + PyTorch）
+  - `task-service`（cron + one-off，9200，自封装 registry）
+  - 服务间通过共享 docker network `venus-internal` 通信
+- **DB schema 管理**（Venus 特殊）：fastapi-backend / ai-skin-analysis **手写 SQL**（不用 alembic 自动迁移）；task-service 独立 alembic chain
+- **任务调度**：**APScheduler 3.10** + 自封装 RecurringJobSpec/OneOffJobSpec registry pattern；每个 task 一个文件，在 `__init__.py` 集中注册 cron
+- **重试**：tenacity 装饰器 `@with_retry(attempts=3, retry_on=(...))`
+- **邮件**：Customer.io（替代了 SendGrid，仍保留 sendgrid 库依赖）
+- **支付**：Stripe Python SDK + RevenueCat webhook 入口
+
+### 跨层惯用模式
+
+- **字段命名**：API JSON 用 **snake_case**（FastAPI / Pydantic 默认），前端直接用 snake_case 不做自动 camelCase 转换 —— 减少一层心智负担
+- **错误格式**：不是 `{error_code, message, details}`，而是 FastAPI 默认 `{detail: "..."}` + HTTP status code；客户端按 status 分支处理。**这与 Kevin 在 tianda-web 的偏好不同**，是历史包袱
+- **API client 不自动生成**：手写 service 文件（`lib/services/*-api.ts`），不用 OpenAPI generator
+- **类型共享**：前后端**不共享类型**，前端手写 TS interface 对应后端 schema
+- **包管理**：RN 用 **yarn**，Next.js 用 **npm**，Vite admin 用 **npm** —— 客户项目历史包袱，不强求 pnpm
+- **部署**：宝塔 + Docker Compose（VPS），Vercel（venus-skincare-box），EAS（RN）
+- **错误上报**：Sentry（RN）+ 后端日志文件（无 Sentry 后端集成）
+- **测试覆盖薄**：fastapi-backend 有 pytest 但覆盖低；RN 有 maestro_e2e 目录但不强制；web 项目**无测试框架**
+- **环境变量管理**：所有项目均 startup 时打印全部 env（`print_all_env_vars()`）便于 debug
+
+### 与 Kevin 自有项目（tianda-web）的差异点
+
+| 维度 | Venus（客户项目） | tianda-web（个人项目） |
+|---|---|---|
+| SQLAlchemy | 同步 Session | **async** Session |
+| DB 迁移 | 手写 SQL | Alembic |
+| 错误格式 | FastAPI 默认 `{detail}` | `{error_code, message, details}` |
+| Pydantic v2 schema | 直接 BaseModel | 部分 dataclass 化 |
+| 状态管理（Next.js） | Context | Zustand |
+| UI 库（后台） | shadcn/ui | **antd 5 + ProComponents** |
+| AI Provider | OpenAI（客户锁） | **Anthropic 优先** |
+| 字段命名 | snake_case 全栈 | 后端 snake / 前端按需 |
+
+**新项目默认选 tianda-web 那一套**（async + Anthropic + antd 后台），Venus 的栈是"维护客户项目时用，自有项目不必照搬"。

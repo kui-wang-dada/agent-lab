@@ -17,7 +17,50 @@ model: opus
 | 手动 `@kevin-curator` | 同上，或按用户指令做单步 |
 | 月初自动（schedule） | 加做"facts 大整合"（合并近 4 周追加的事实） |
 
-## 周巡 4 步
+## 周巡 5 步
+
+### Step 0: 扫 Cowork sessions 增量（导入外部记忆）
+
+Kevin 平时在桌面 app 的 **Cowork** 里也跟 AI 聊（4 个 space：upwork / media / freelance / kevin-hub）。
+这些对话存在 `~/Library/Application Support/Claude/local-agent-mode-sessions/` 下，
+**不会自动进 agent-lab 记忆**，所以周巡时主动拉一次。
+
+#### 0.1 跑导出脚本（4 个 space 各一次）
+
+```bash
+cd ~/Project/profile/project/agent-lab
+for space in upwork media freelance kevin-hub; do
+  python3 scripts/import-cowork-sessions.py "$space"
+done
+```
+
+输出到 `.claude/memory/_review-queue/cowork-<space>-import-<YYYY-MM-DD>.md`。
+
+#### 0.2 判断"已消化过的边界"
+
+每个 domain 的 facts.md / learnings.md 里查"最后一条 cowork 来源的条目"日期（look for "20XX-XX-XX — " 形式的时间戳）。
+**只消化该日期之后的 session**——避免把同一段对话提炼多次。
+
+如果是**首次跑**（domain memory 里没有 cowork 来源痕迹），就消化全部（参考 2026-05-14 已经做过的 media）。
+
+#### 0.3 消化规则（红线，与 2026-05-14 首次跑保持一致）
+
+提炼到 `.claude/memory/<space-name>/facts.md` 和 `learnings.md`：
+
+| ✅ 提炼 | ❌ 不要提炼 |
+|---|---|
+| Kevin 明确说过的偏好（"我不要…""我希望…"）| AI 给 Kevin 的建议（除非 Kevin 明确接受）|
+| Kevin 做过的具体决策（"那就用 X""不用 Y"）| AI 自己总结的"内容公式""创作模板"|
+| Kevin 表达的厌恶 / 喜爱 | "可能 Kevin 会喜欢…"这种推测 |
+| 具体数字 / 参数 / 日期 | 抽象的"方法论"|
+
+**分不清是 Kevin 还是 AI 说的 → 不要写**。Kevin 的红线非常硬：facts.md 里出现一条不是他说的偏好，整个文件的可信度会被他怀疑。
+
+#### 0.4 消化后
+
+- 在 facts.md / learnings.md 里给每条新增**标注来源**：`（cowork-<space>, session local_xxx, 2026-XX-XX）`
+- 删掉处理完的 `_review-queue/cowork-*.md` raw 文件（已消化的不留垃圾）
+- 在周巡报告里列"本周新拉了 X 个 cowork session，消化成 Y 条 facts + Z 条 learnings"
 
 ### Step 1: 抽 skill 候选
 
@@ -106,6 +149,7 @@ ls .claude/skills/*.md
 最后给 Kevin 一份周报：
 ```
 📊 Curator 周巡 - <YYYY-WW>
+- Cowork 增量：upwork +X / media +Y / freelance +Z / kevin-hub +W 个 session，消化成 N 条 facts + M 条 learnings
 - skill 候选：X 个，详见 _skill-candidates-WW.md
 - facts 整合：合并 X 条，标记过期 Y 条
 - USER.md：本周新增 X 条 Hot Context
