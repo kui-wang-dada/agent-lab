@@ -544,7 +544,9 @@ def get_db():
         db.close()
 ```
 
-⚠️ **同步 Session**（非 async）—— Venus 历史选择。tianda-web 走 async。
+⚠️ **同步 Session**（非 async）—— Venus 历史包袱，**新项目一律 async**（2026-05-17 Kevin 确认）。
+- async 默认：`AsyncSession` + `async_sessionmaker` + `create_async_engine` + asyncpg driver
+- 参考实现：tianda-web；不要复制 Venus 这套同步写法到新项目，哪怕是客户项目
 
 ✅ Schema 管理特殊规则：
 - `fastapi-backend` / `ai-skin-analysis`：**手写 SQL** 直接 apply，不用 Alembic（main/CLAUDE.md:276 明确）
@@ -866,8 +868,8 @@ networks:
 | 新 RN app | Expo 53 + zustand + axios + vision-camera | Venus 全套已稳定 |
 | 新 web admin（重交互） | Vite + react-router 6 + zustand + shadcn/ui | Venus internal-admin 模板 |
 | 新公开 web | Next.js 15 + Tailwind（不要 shadcn 那么重） | tianda-web 模式 |
-| 新 FastAPI 后端（个人项目） | **async** SQLAlchemy + Alembic + Anthropic | tianda-web 模式（不抄 Venus） |
-| 新 FastAPI 后端（客户项目，要兼容旧栈） | 同步 SQLAlchemy + 手写 SQL + OpenAI | Venus 模式 |
+| 新 FastAPI 后端（**所有项目**） | **async** SQLAlchemy（AsyncSession + asyncpg）+ Alembic | 2026-05-17 Kevin 确认：Venus 的同步 Session 是历史包袱，新项目一律 async，客户项目也不复用 |
+| 新 FastAPI 后端 AI provider | Anthropic 优先（个人项目） / 跟客户技术栈（如 Venus 用 OpenAI） | 选 provider 看场景，不看新旧 |
 | cron 任务 | APScheduler + 自封装 registry（抄 task-service） | 优于 Celery（无 broker 依赖） |
 | AI 推理服务 | 独立 FastAPI + startup 强制初始化模型 | 同 ai-skin-analysis |
 | 跨服务通信 | docker network external + service alias | 同 venus-internal |
