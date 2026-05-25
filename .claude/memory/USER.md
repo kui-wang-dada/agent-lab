@@ -77,7 +77,7 @@
 ## Hot Context（本周，curator 每周更新）
 
 ### 2026-W19/W20
-- **agent-lab 重构落地**：从 4 agent 升到 10 agent（router/assistant/curator/upwork/domestic/research/media/product/coder/qa）；曾尝试细分 dev 为 architect/fe/be/qa，跑通后判断对单兵 AI 体系是过度设计——合并为 coder 一体，复杂任务现派 subagent
+- **agent-lab 重构落地**：从 4 agent 升到 11 agent（含 designer），2026-05-20 删除 router 后降为 10 agent（assistant/curator/upwork/domestic/research/media/product/designer/coder/qa）；曾尝试细分 dev 为 architect/fe/be/qa，跑通后判断对单兵 AI 体系是过度设计——合并为 coder 一体，复杂任务现派 subagent。router 删除原因：Anthropic 官方建议 routing 由主线程承担，原决策表已迁入 CLAUDE.md
 - 启用 Hermes 风格学习闭环（hooks + curator 周巡 + USER.md 用户建模）
 - 客户分界改为按"语言"切：英文 → upwork，中文 → domestic
 - Venus 项目本周完成 Color Card / Color Consult / Paywall hard-paywall 改造
