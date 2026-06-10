@@ -161,17 +161,25 @@ Kevin Wang，全栈 + AI 应用开发工程师，10 年+。2024 起 Upwork 自�
 
 ---
 
-## 学习闭环（Hermes 灵魂）
+## 学习闭环 = 经验回流引擎（Hermes 灵魂）
 
-三种成长机制，**通过 hook 强制触发**（不靠 agent 自觉）：
+**北极星**：agent-lab 是一台**持续优化"接活后开发流程"的引擎**。每次接活的经验 + 外部优秀案例，回流进结构和实现，让**下次接活起点更高、开发更快**。
 
-### 1. Skill 自动生成 / 改进
-**每次 SubagentStop 触发** → `subagent-stop.sh` 把本次对话 metadata 写入 `.claude/memory/_review-queue/`，
-curator 周巡时批量评估"哪些操作模式值得抽 skill"。
+> **关于自学习的立场（2026-06 校准）**：自学习**是这套体系的目的本身**，不是要不要的问题。真正要反对的是**"无人在环、向量魔法式的全自动进化"**（那是头号 hype），**不是自学习**。所以做法是 **分层自治**——不是"全自动"也不是"全靠人"。
 
-判断"可泛化"标准：
-- ✅ 适用于未来 2+ 次类似任务（如"如何从 Upwork 抓邀请并按格式整理"）
-- ❌ 一次性任务（如"今天给客户 X 写的提案"）
+### 分层自治（强默认 + 可否决）
+
+`category → tier` 是固定的人脑映射（**不按项目规模自动判 tier，anti-bloat 红线**）：
+
+| 类别 | tier | 激活 |
+|---|---|---|
+| 失败护栏 / stack 经验 / 事实条目 | 低 | **自动落** + 周巡 digest 列出供否决（`git revert` 即否决） |
+| 新 skill / 改 agent / 改 project-os plugin 机器 | 高 | 出候选 → Kevin 拍板 |
+
+- **hook 打 signal**：`subagent-stop.sh` / `stop.sh` 把对话 metadata + `signal:failure|normal` 写入 `.claude/memory/_review-queue/`（失败信号最该沉淀成护栏）。
+- **置信度阈值**：低风险类且分 ≥ 0.6（跨记录重复 × 栈无关 × 非近似重复）才自动落，否则降级为候选。阈值是注意力分配工具，不是流程触发器。
+- **判断"可泛化"标准**：✅ 适用未来 2+ 次类似任务；❌ 一次性任务。
+- 详细执行逻辑见 [`scripts/curator-prompt.txt`](scripts/curator-prompt.txt)（周巡的大脑）。
 
 ### 2. 长期记忆追加
 agent 在工作中观察到时**主动追加**：
@@ -190,7 +198,7 @@ agent 在工作中观察到时**主动追加**：
 任何 agent 当用户问起"上次说的 xxx""我们之前讨论过"时，**先用 `mcp__ccd_session_mgmt__search_session_transcripts`** 搜过往对话再回答。
 
 ### 4. 周巡（curator 自动跑）
-- 周日 21:30：kevin-curator 触发（schedule skill）
+- **调度**：macOS launchd `com.kevin.agent-lab-curator`（**不是** schedule skill）——周日/一/二 21:30 三触发点（睡眠补跑窗口）+ 开机兜底，`scripts/curator-run.sh` 按 ISO 周号幂等保证一周只真跑一次。headless 写 `.claude/` 需 `--dangerously-skip-permissions`（protected path，Claude Code ≥ 2.1.126）。
 - 整合 facts.md（合并重复条目）
 - 评审 _review-queue/ 抽 skill
 - 更新 USER.md（dialectic 用户建模）
@@ -200,11 +208,7 @@ agent 在工作中观察到时**主动追加**：
 
 ## 写法约定（所有 dev 类 agent 共享）
 
-- **TypeScript**：不写 `any`；优先 type，必要时 interface
-- **Python**：3.11+，FastAPI + Pydantic v2，不吞异常
-- **前端**：Next.js App Router，server component 优先，client component 必须显式标注原因；Tailwind
-- **后端**：错误统一 `{ error_code, message, details }`
-- **通用**：函数 > 类，组合 > 继承；注释写"为什么"不写"是什么"
+> 已拆到 path-scoped rule [`.claude/rules/coding-conventions.md`](.claude/rules/coding-conventions.md)（碰 TS/JS/Python 文件才加载，不再每个 session 全局占 context）。dev 类 agent 写代码时自动生效。一句话备忘：不写 `any` / 不吞异常 / server component 优先 / 函数>类 / 注释写为什么。
 
 ---
 
@@ -225,6 +229,19 @@ agent 在工作中观察到时**主动追加**：
 - 给推荐时附理由，让 Kevin 能反驳
 - 不写空话和过度礼貌性铺垫
 - 完成任务后报告"改了哪些文件"（用相对路径）
+
+---
+
+## Compaction 保留（长 session / 周巡 headless 都适用）
+
+压缩对话时（`/compact` 或自动 compaction），**务必保留**：
+
+- 本轮改动的文件清单及其用途（相对路径）
+- 当前活跃任务 / ticket ID / 正在跑的 subagent
+- 关键决策与其理由（路由判断、已拍板的方案、被否决的选项）
+- 待执行命令 / 验证步骤
+
+> 边界：这是 best-effort guidance（Claude Code v2.1.152 起 compaction 会尽量保留用户指令），**非强制**。官方没有"调低自动 compaction 阈值"的设置项，别指望旋钮。强保证仍靠落盘——周巡产物落 `memory/`、项目态落 `daily/D<N>/progress.md`。
 
 ---
 

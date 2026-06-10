@@ -46,6 +46,25 @@ if [ -f "$TRANSCRIPT" ]; then
   ' "$TRANSCRIPT" 2>/dev/null | head -c 200 || true)"
 fi
 
+# 过滤噪音：IDE 打开文件事件 / 空意图（无任务价值，curator 无从评估），不入队。
+# 这类曾占 review-queue 的 88%，每次周巡都要在噪音里淘金。
+case "$USER_INTENT" in
+  "<ide_opened_file>"*|"")
+    echo '{}'
+    exit 0
+    ;;
+esac
+
+# ── 失败信号检测（喂经验回流引擎：失败→护栏）──────────────────────────────
+# 只粗分 failure / normal（grep 标记，cheap & 可靠）。更细的 reusable-pattern /
+# fact 分类由 curator 周巡读全文判定——hook 层只做廉价可靠的那一刀。
+SIGNAL="normal"
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  if grep -qiE '"is_error":[[:space:]]*true|traceback \(most recent|compilation (error|failed)|build failed|command not found|❌|STOP 报' "$TRANSCRIPT" 2>/dev/null; then
+    SIGNAL="failure"
+  fi
+fi
+
 # 写入 queue
 OUT="$QUEUE/$TS_FILE-subagent.json"
 jq -n \
@@ -55,6 +74,7 @@ jq -n \
   --arg transcript "$TRANSCRIPT" \
   --arg cwd "$CWD" \
   --arg intent "$USER_INTENT" \
+  --arg signal "$SIGNAL" \
   '{
     type: "subagent",
     timestamp: $ts,
@@ -62,7 +82,8 @@ jq -n \
     agent: $agent,
     transcript_path: $transcript,
     cwd: $cwd,
-    user_intent_snippet: $intent
+    user_intent_snippet: $intent,
+    signal: $signal
   }' > "$OUT"
 
 # 静默成功

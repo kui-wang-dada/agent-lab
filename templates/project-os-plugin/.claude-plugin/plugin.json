@@ -1,0 +1,8 @@
+{
+  "name": "project-os",
+  "version": "1.0.0",
+  "description": "人+AI 协作交付的三段流水线工程 OS（机器层）：5 个 agent（product/coder/qa/designer/curator）+ 三档执行命令（/run-day 单天 · /parallel-day 并行 · /serial-day 串行链 · /integrate-day 合并）+ session-start/stop/stop-gate/subagent-stop hooks。配 scaffold（templates/project-os，cp 进每个 gig）使用。机器层经 marketplace 更新，自动传播到所有 gig，消除副本 drift。",
+  "author": {
+    "name": "Kevin Wang"
+  }
+}

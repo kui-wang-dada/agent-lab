@@ -1,0 +1,15 @@
+# type/lint 硬 gate 的校验命令（SP2 #1，stop-gate.sh 读这个文件）。
+# 启用：cp verify-cmd.example verify-cmd，取消下面对应栈那行的注释、删掉其余。
+# 第一条非注释非空行 = 实际跑的命令。要快（每次 turn 结束都跑）；慢栈留空文件 = 关。
+#
+# Next.js / TS:
+# pnpm tsc --noEmit && pnpm eslint . --max-warnings=0
+#
+# Vue3 + plus-ui:
+# pnpm vue-tsc --noEmit
+#
+# Python / FastAPI:
+# ruff check . && mypy .
+#
+# RuoYi / Java（mvn compile 慢，默认别开 gate，留空文件走 closing audit）:
+# （不填）

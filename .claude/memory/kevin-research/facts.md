@@ -201,3 +201,47 @@
 - ✅ 阿里百炼 Qwen3-ASR 官方文档 —— 当前 SOTA 商用方言 API
 - ✅ 讯飞 dia_model 页面 —— 国内方言覆盖最全（但数字虚高需谨慎）
 - ⚠️ 厂商"支持 N 种方言"宣传数字需打折——实际可商用稳定的约为宣称值的 50-70%
+
+## 2026-06-05 — ASR 词级时间戳/热词专项调研沉淀（media pipeline 强相关，diff 自 05-20）
+
+**最关键洞察（读了 media/pipeline 源码）**：Kevin 字幕**文字来自文案 `01-script.md` 而非 ASR**，ASR 只提供词级时间戳。align-script.py 用 SequenceMatcher 把 script chunk 在 whisper 词流里找匹配借时间戳。所以"java→加瓦"错字**不进字幕**，真实痛点是"术语听错→相似度对不上→该句字幕漏掉/错位"。**真正杠杆一半在 align-script（给术语加音近映射表），不全在换 ASR**。**词级时间戳（每词 start/end）是真硬约束**——`flatten_whisper_words` 强依赖，无词级时间戳方案直接淘汰。
+
+**词级时间戳支持核实结果（按可靠度）**：
+- ✅ 原生确认：阿里云百炼 Fun-ASR/Paraformer API（`sentences[].words[]` begin/end/text，**固定开启**，文档最明确）、Whisper（现状）、FunASR Paraformer-zh / Fun-ASR-Nano（README 标 "ASR+timestamps"，本地，但有"text/timestamp 长度不匹配"历史坑）
+- ⚠️ 半成品：SenseVoice（2024-11 起 CTC-alignment 时间戳，但 word-level 官方仍写 "later"，2025 有 bug，靠社区 Enhanced 版）
+- ⚠️ 未直接确认：腾讯云 ASR（文档说"词级粒度"但没给字段，需实测）
+
+**热词能力**：SeACo-Paraformer（FunASR）是开源热词 SOTA，`hotword="..."` 灵活定制——比 Whisper 强一档。**faster-whisper 的 hotwords/initial_prompt 受 448 token 上限，且 initial_prompt 会改 segment 时长甚至降精度**（GitHub issue 实证）——这是 Kevin 现方案上限低的硬原因。腾讯云热词：临时128/表1000，每词≤10字。
+
+**微信"很准"真相**：=腾讯自研"微信智聆"(2013起)+腾讯云 ASR 大模型(16k_zh_en 普粤英)+**产品级后处理**(不随 API 开放)。可走腾讯云 ASR API 复用引擎，但**微信 App 转文字不给时间戳**，所以微信本身不能用。
+
+**价格更新**：Qwen3-ASR-Flash $0.00192/min≈¥0.83-1.2/h；讯飞机器转写 ¥0.33/min=¥19.8/h（贵）；火山豆包并发版 ¥500/并发/月。Kevin 月音频 1-2.5h，云成本 <¥3 可忽略。
+
+**本地路线排序变化（vs 05-20）**：死磕词级时间戳后，**Paraformer-zh/Fun-ASR-Nano（原生词级+SeACo真热词）升为本地首选，SenseVoice 因时间戳半成品降级**。最大不确定性=FunASR 在 Mac/MPS 支持（README 只确认 CPU 17x realtime，量小够用）。
+
+**信源补充**：
+- ✅ FunASR GitHub README —— 模型矩阵/timestamps/热词/OpenAI兼容API 一手
+- ✅ 阿里云百炼录音文件识别文档 —— 词级时间戳字段最明确的官方文档
+- ✅ SeACo-Paraformer GitHub + arxiv 2308.03266 —— 开源热词 SOTA
+- ✅ CS-Dialogue benchmark arxiv 2502.18913 —— 第三方中英混合 MER/CER
+- ✅ faster-whisper GitHub issue —— 448 token 热词上限实证（"为什么 Whisper 热词弱"的硬证据）
+- ⚠️ Fun-ASR 技术报告 arxiv 2509.12508 —— code-switching WER 1.59-4.50% 是**厂商自测集+RL/RAG**，无第三方对比，打折看
+
+## 2026-06-07 — script-first 视频工具市场调研沉淀（media pipeline 商业化评估）
+
+**核心结论**：Kevin 想把 media/pipeline 打包成桌面软件卖给"技术口播创作者"——判定为**利基有限、整体偏红海**。差异点只有一个站得住：「字幕文字100%来自文案原文（照稿念零错字）」的强制对齐。但：
+- **国内已被覆盖**：剪映"文稿匹配"= 粘贴已审核文稿、字幕用原文、自动断句对齐（与 Kevin 核心点同质）；度加剪辑（百度）明确瞄"口播/知识创作者"且免费。国内缝隙小。
+- **海外有缝隙**：Descript caption 仍 ASR（95% 需校正），"replace script track"只对齐 b-roll 不替换字幕文字；Submagic/Opus/Captions/Gling 全 ASR。**没人把"脚本原文对齐"做成成品**。缝隙在海外更大。
+- **但 feature 级非 category 级**：forced alignment 有 aeneas/whisperX/Gentle 开源，FFmpeg 8.0 集成 Whisper，技术不稀缺，稀缺的是"产品化打包给窄人群"。
+**最大风险**：①基础设施下沉碾压（FFmpeg+Whisper、剪映免费）②人群太窄×要求"先写逐字稿"双过滤 ③国内付费意愿弱 ④独立桌面软件分发难+本地whisper/ffmpeg安装门槛。
+
+**定价基准（可复用）**：海外 AI 视频工具甜区 $15-30/mo（Captions $9.99起/Submagic $14/Opus $15-29/Gling $20-40）；桌面买断 Timebolt ~$50-347；国内剪映 SVIP 499/年。
+
+**新增可信信源**（视频/创作工具调研）：
+- ✅ Descript Help 官方 — text-based editing 标杆能力边界一手
+- ✅ submagic.co / captions.ai / timebolt.io 官方 pricing — 海外 AI 视频工具定价一手
+- ✅ ducut.baidu.com — 度加剪辑（国内口播/知识创作者赛道）一手
+- ✅ GitHub aeneas / whisperX / VideoCaptioner — forced-alignment + ASR+LLM 字幕开源现状
+- ⚠️ 知乎/CSDN 剪映教程页 — 频繁 403/521，靠 WebSearch 摘要而非 WebFetch（同 05-18 ASR 调研经验）
+
+**适用场景**：未来 Kevin 评估任何"把自用工具/pipeline 变现成软件产品"的 idea；或调研视频剪辑/字幕/AI 创作工具竞品时第一手参考。同主题增量调研可 diff `script-first-video-tool-market-2026-06-07.md`。

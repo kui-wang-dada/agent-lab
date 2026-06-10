@@ -1,0 +1,16 @@
+{
+  "name": "agent-lab",
+  "owner": {
+    "name": "Kevin Wang"
+  },
+  "metadata": {
+    "description": "Kevin 的私有 marketplace：分发工程 OS 等可复用机器层 plugin 到各 freelance gig，机器层更新自动传播以消除副本 drift。"
+  },
+  "plugins": [
+    {
+      "name": "project-os",
+      "source": "./templates/project-os-plugin",
+      "description": "人+AI 协作交付三段流水线工程 OS 的机器层（agents/commands/hooks）。每个 freelance gig：cp templates/project-os scaffold + 装本 plugin。"
+    }
+  ]
+}

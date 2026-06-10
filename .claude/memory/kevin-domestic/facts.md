@@ -5,7 +5,7 @@
 
 ## 业务定位
 
-- **当前状态**：国内项目极少（主要产能在 Upwork 海外）
+- **当前状态**（2026-06 修订）：国内已成为重要产能轴——dongjiaoshan（农业全产业链 SaaS，~15 天主线已近完成）+ sensenran-guzi 两个在跑项目。不再是"极少"
 - **未来增长方向**：宠物医疗 B 端（兽医专业同学渠道，indie-dev 项目方向）
 - 货币：CNY
 - 工时偏好：远程，国内时差无障碍
@@ -62,7 +62,7 @@
 <!-- 待 Kevin 补充：
 - 已有可复用的合同模板路径？
 - 优先用哪个版本（个人 vs 工作室）？
-- "天大工作室" 主体作合同甲方代号是否使用？
+- "添达工作室" 主体作合同乙方主体名是否使用？
 -->
 
 ## 朋友转介专项规则（硬性，重要）
@@ -119,12 +119,29 @@
 4. **AI 工具加速交付**（Claude Code + Cursor 工作流）
 5. **在中国服务海外客户的经验**（远程协作、跨时区项目管理）
 
-## 当前接单状态（2026-05）
+## 当前接单状态（2026-06）
 
-- 当前国内项目：暂无（精力主要在 Venus 韩国客户上）
-- 历史国内项目：<!-- 待 Kevin 补充 -->
+| 项目 | 路径 | 状态 | 栈 |
+|---|---|---|---|
+| **dongjiaoshan**（东角山数字化管理系统） | `freelance/projects/dongjiaoshan/` | 主线 ~15 天近完成，后续功能对齐 + 测试修复 | RuoYi-Vue-Plus 5.x（Java 17 + Spring Boot 3）+ plus-ui（Vue3+ElementPlus）+ MySQL 8 |
+| **sensenran-guzi**（森冉谷子） | `freelance/projects/sensenran-guzi/` | 已到合约/架构阶段（01-need~04-architecture + design 已出） | uni-app 系（见 research-notes/uniapp-stack-sensenran） |
+| **zhengda-jixun-miniapp**（正大集团新员工集训） | `freelance/projects/zhengda-jixun-miniapp/` | 06-05 新询单，死线 7-20（仅 ~33 工作日），评估+两档报价已出，未签 | 微信小程序学员端 + 助教/管理后台 + 后端 API |
+
 - 朋友询单频率：<!-- 待 Kevin 补充 -->
+- **同时在跑/在评估的国内项目已 3 个**（dongjiaoshan / sensenran-guzi / zhengda）——国内不再是"暂无"，已是 5-6 月重要产能轴
+- **dongjiaoshan 报价口径**（已内部定，未必发甲方）：按"主力开发 + 架构 + 集成"算钱，不按总包（防进度拖死）；朋友介绍的两个兼职费用甲方自己出
+- **AI 加速套利窗口**（dongjiaoshan 验证）：国内甲方还没普遍消化 AI 能砍多少工时——按"人写"报价（¥160-220k）+ AI 重度接管实际交付（9-12 周），有效时薪能拉到 ¥600-1000/h。红线：B 端质量不能塌，省下的时间至少 1/3 喂给 QA + review
 
 ---
 
 <!-- agent 追加新观察 -->
+
+## 2026-06-05 — 新询单：正大集团新员工集训小程序（zhengda-jixun-miniapp）
+朋友/熟人路径国内询单。正大集团 7 月下旬新员工集训（400 学员+助教、7 天、襄阳职业技术大学、要求 500 并发不断连），客户期望 **7-20 上线**（今 06-05，仅 ~33 工作日）。三端：微信小程序学员端 + 助教/管理后台 + 后端 API。功能：登录/地图打卡/闯关路线/积分/日志/互评/数据看板。
+项目档案：`freelance/projects/zhengda-jixun-miniapp/`（01-assessment 评估+路线+风险 / 02-quote 两档报价 / 03-blockers P0卡点）。
+**核心评估结论**：单人+全功能+7-20 三者不可同时成立（PDF 已论证工时缺口 ~30 天）→ 接 MVP + 拉1人 + 路线按"客户有无备案域名/企业小程序主体"二分。报价 MVP ≈ ¥10.9万（开发9.5万+值守1.4万），完整功能 ≈ ¥14.1万。
+**适用场景**：跟进这个客户 / 未来任何"死线钉死在物理日历上的活动支撑系统"类项目。
+
+## 2026-06-05 — dongjiaoshan 沉淀出可复用"工程 OS"模板（curator 整合自 review-queue）
+15 天大型项目复盘后，Kevin 让 agent 把经验固化成 `agent-lab/templates/project-os/`——一套"人+AI 协作交付"的三段流水线模板（SP1 接料→设计 / SP2 执行→验证 / SP3 反哺→再生），强默认+可关、单一变量源 PROJECT.md、三件 SSOT（冻结 schema / 真截图锚定组件 / 机器可验收 checkbox）。
+**适用场景**：未来开任何中/大型国内项目，先 `cp` 这套模板再填 PROJECT.md（见 skill `domestic-project-os-bootstrap`）。

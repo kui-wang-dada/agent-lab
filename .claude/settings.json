@@ -44,7 +44,13 @@
       "Edit(.claude/memory/**)",
       "Write(.claude/memory/**)",
       "Edit(.claude/skills/**)",
-      "Write(.claude/skills/**)"
+      "Write(.claude/skills/**)",
+      "Edit(/Users/wkui/Project/profile/project/agent-lab/.claude/memory/**)",
+      "Write(/Users/wkui/Project/profile/project/agent-lab/.claude/memory/**)",
+      "Edit(/Users/wkui/Project/profile/project/agent-lab/.claude/skills/**)",
+      "Write(/Users/wkui/Project/profile/project/agent-lab/.claude/skills/**)",
+      "Edit(/Users/wkui/Project/profile/project/media/.claude/skills/**)",
+      "Write(/Users/wkui/Project/profile/project/media/.claude/skills/**)"
     ]
   }
 }
